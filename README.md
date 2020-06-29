@@ -1,2 +1,2 @@
-# aitkphp
-PHP for AI Toolkits
+# phpAITK
+PHP Toolkits for AI
