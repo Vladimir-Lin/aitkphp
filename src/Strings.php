@@ -86,7 +86,7 @@ public static function ReplaceTemplateByMaps ( $TEMPLATE , $MAPS , $REPLACES )
   return $SCRIPT                                                             ;
 }
 //////////////////////////////////////////////////////////////////////////////
-public static function ReplaceFileByKeys ( $FILENAME , $REPLACES )           {
+public static function ReplaceFileByKeys ( $FILENAME , $REPLACES           ) {
   ////////////////////////////////////////////////////////////////////////////
   $CMHR = file_get_contents  ( $FILENAME         )                           ;
   ////////////////////////////////////////////////////////////////////////////
