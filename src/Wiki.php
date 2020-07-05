@@ -321,10 +321,16 @@ public static function SettingsEditorDB   ( $DB                              ,
                                             $Content                         ,
                                             $Options                       ) {
   ////////////////////////////////////////////////////////////////////////////
-  $ID          = self::RandomString       ( "SettingsEditor-"  , 40        ) ;
+  $ID          = self::GetTag             ( "id"       , $argv             ) ;
+  if                                      ( strlen ( $ID ) <= 0            ) {
+    $ID        = self::RandomString       ( "SettingsEditor-"  , 40        ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   $PICKDB      = self::GetTag             ( "database" , $argv             ) ;
   $Edit        = self::GetTag             ( "editable" , $argv             ) ;
-  $SEZTAB      = self::GetAssignTable     ( "settings" , $argv , $Options  ) ;
+  $SEZTAB      = self::GetAssignTable     ( "`settings`"                     ,
+                                            $argv                            ,
+                                            $Options                       ) ;
   ////////////////////////////////////////////////////////////////////////////
   $Templates   = $Options                 [ "Templates"                    ] ;
   $EXTENSION   = $Options                 [ "AITK"                         ] ;
@@ -363,6 +369,7 @@ public static function SettingsEditorDB   ( $DB                              ,
         "$(SETTINGS-EDITOR-ID)"  =>   $ID                                    ,
         "$(SETTINGS-DB)"         =>   $PICKDB                                ,
         "$(SETTINGS-TABLE)"      =>   $SEZTAB                                ,
+        "$(SETTINGS-EDIT)"       =>   $Edit                                  ,
         "$(SETTINGS-EDITABLE)"   =>   $EDITABLE                              ,
         "$(SETTINGS-READONLY)"   =>   $READONLY                              ,
         "$(SETTING-ITEM-ID)"     =>   $rr [ 0 ]                              ,
@@ -383,12 +390,17 @@ public static function SettingsEditorDB   ( $DB                              ,
     "$(SETTINGS-EDITOR-ID)"  =>   $ID                                        ,
     "$(SETTINGS-DB)"         =>   $PICKDB                                    ,
     "$(SETTINGS-TABLE)"      =>   $SEZTAB                                    ,
+    "$(SETTINGS-EDIT)"       =>   $Edit                                      ,
     "$(SETTINGS-EDITABLE)"   =>   $EDITABLE                                  ,
     "$(SETTINGS-READONLY)"   =>   $READONLY                                  ,
     "$(SETTINGS-ITEMS)"      =>   $ITEMX                                     ,
   )                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  return Strings::ReplaceFileByKeys       ( $TEMPLFILE , $MAPS             ) ;
+  $HTML = Strings::ReplaceFileByKeys      ( $TEMPLFILE , $MAPS             ) ;
+  return array                                                               (
+    "HTML"     => $HTML                                                      ,
+    "Complete" => "<div id='{$ID}'>{$HTML}</div>"                            ,
+  )                                                                          ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // 參數設定編輯器
@@ -409,7 +421,7 @@ public static function SettingsEditor ( $argv , $Content , $Options        ) {
   ////////////////////////////////////////////////////////////////////////////
   $DBX  -> Close                      (                                    ) ;
   ////////////////////////////////////////////////////////////////////////////
-  return $HTML                                                               ;
+  return $HTML [ "Complete" ]                                                ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // CheckBox參數設定編輯器
@@ -419,7 +431,9 @@ public static function SettingsCheckBox   ( $argv , $Content , $Options    ) {
   $ID          = self::RandomString       ( "Input-" , 24                  ) ;
   $PICKDB      = self::GetTag             ( "database" , $argv             ) ;
   $HOST        = self::GetCurrentDB       ( $argv , $Options               ) ;
-  $SEZTAB      = self::GetAssignTable     ( "settings" , $argv , $Options  ) ;
+  $SEZTAB      = self::GetAssignTable     ( "`settings`"                     ,
+                                            $argv                            ,
+                                            $Options                       ) ;
   $TEMPID      = "Settings::CheckBox"                                        ;
   ////////////////////////////////////////////////////////////////////////////
   $SETS        = new Settings             (                                ) ;
@@ -520,7 +534,9 @@ public static function SettingsInputer    ( $argv                            ,
   ////////////////////////////////////////////////////////////////////////////
   $PICKDB      = self::GetTag             ( "database" , $argv             ) ;
   $HOST        = self::GetCurrentDB       ( $argv , $Options               ) ;
-  $SEZTAB      = self::GetAssignTable     ( "settings" , $argv , $Options  ) ;
+  $SEZTAB      = self::GetAssignTable     ( "`settings`"                     ,
+                                            $argv                            ,
+                                            $Options                       ) ;
   ////////////////////////////////////////////////////////////////////////////
   $SETS        = new Settings             (                                ) ;
   ////////////////////////////////////////////////////////////////////////////
@@ -627,7 +643,9 @@ public static function SettingsStarDate   ( $argv , $Content , $Options    ) {
   ////////////////////////////////////////////////////////////////////////////
   $PICKDB      = self::GetTag             ( "database" , $argv             ) ;
   $HOST        = self::GetCurrentDB       ( $argv , $Options               ) ;
-  $SEZTAB      = self::GetAssignTable     ( "settings" , $argv , $Options  ) ;
+  $SEZTAB      = self::GetAssignTable     ( "`settings`"                     ,
+                                            $argv                            ,
+                                            $Options                       ) ;
   $TEMPID      = "Settings::DateTime"                                        ;
   ////////////////////////////////////////////////////////////////////////////
   $SETS        = new Settings             (                                ) ;
