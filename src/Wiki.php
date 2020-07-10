@@ -859,6 +859,99 @@ public static function CiosTypeCounts ( $argv , $Content , $Options        ) {
   return "{$Content}{$TOTAL}"                                                ;
 }
 //////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型起始基數
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypeBase   ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  $TOTAL = ""                                                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TYPETABLE   = self::GetAssignTable ( "`types`" , $argv , $Options       ) ;
+  $TYPEID      = self::GetTag         ( "type"    , $argv                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `head` from {$TYPETABLE}"                           .
+                 " where ( `id` = {$TYPEID} ) ;"                             ;
+  $BASE        = $DBX -> FetchOne     ( $QQ                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "{$Content}{$BASE}"                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型最大數值
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypeMax    ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  $TOTAL = ""                                                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TYPETABLE   = self::GetAssignTable ( "`types`" , $argv , $Options       ) ;
+  $TYPEID      = self::GetTag         ( "type"    , $argv                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MAXV        = 0                                                           ;
+  $QQ          = "select `head`,`digits` from {$TYPETABLE}"                  .
+                 " where ( `id` = {$TYPEID} ) ;"                             ;
+  $qq          = $DBX -> Query        ( $QQ                                ) ;
+  if                                  ( $DBX -> hasResult ( $qq )          ) {
+    //////////////////////////////////////////////////////////////////////////
+    $rr        = $qq -> fetch_array   ( MYSQLI_BOTH                        ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $BASE      = $rr [ 0 ]                                                   ;
+    $DIGITS    = $rr [ 1 ]                                                   ;
+    //////////////////////////////////////////////////////////////////////////
+    $AMOUNT    = 1                                                           ;
+    for                               ( $II = 0 ; $II < $DIGITS ; $II++    ) {
+      $AMOUNT  = intval               ( $AMOUNT * 10 , 10                  ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    $MAXV      = intval               ( $BASE + $AMOUNT - 1 , 10           ) ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "{$Content}{$MAXV}"                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型總數
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypeAmount ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  $TOTAL = ""                                                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TYPETABLE   = self::GetAssignTable ( "`types`" , $argv , $Options       ) ;
+  $TYPEID      = self::GetTag         ( "type"    , $argv                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `digits` from {$TYPETABLE}"                         .
+                 " where ( `id` = {$TYPEID} ) ;"                             ;
+  $DIGITS      = $DBX -> FetchOne     ( $QQ                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AMOUNT      = 1                                                           ;
+  for                                 ( $II = 0 ; $II < $DIGITS ; $II++    ) {
+    $AMOUNT    = intval               ( $AMOUNT * 10 , 10                  ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "{$Content}{$AMOUNT}"                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
 // CIOS 物件類型列表
 //////////////////////////////////////////////////////////////////////////////
 public static function CiosTypeListings ( $argv , $Content , $Options      ) {
@@ -895,6 +988,12 @@ public static function CiosTypeListings ( $argv , $Content , $Options      ) {
     }                                                                        ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
+  $ORDERBY     = "order by `id` asc"                                         ;
+  $ORDERS      = self::GetTag         ( "order" , $argv                    ) ;
+  if                                  ( strlen ( $ORDERS ) > 0             ) {
+    $ORDERBY   = $ORDERS                                                     ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   $WIKI        = $Options             [ "Configure" ] [ "item" ]             ;
   $Templates   = $Options             [ "Templates"                        ] ;
   $EXTENSION   = $Options             [ "AITK"                             ] ;
@@ -911,7 +1010,9 @@ public static function CiosTypeListings ( $argv , $Content , $Options      ) {
   $ITEMs       = array                (                                    ) ;
   ////////////////////////////////////////////////////////////////////////////
   $QQ          = "select `id`,`uuid`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki`,`ltime`" .
-                 " from {$TYPETAB} where ( `used` > 0 ) order by `id` asc ;" ;
+                 " from {$TYPETAB}"                                          .
+                 " where ( `used` > 0 )"                                     .
+                 " {$ORDERBY} ;"                                             ;
   $qq          = $DBX -> Query        ( $QQ                                ) ;
   if                                  ( $DBX -> hasResult ( $qq )          ) {
     while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH )                       ) {
@@ -1003,6 +1104,12 @@ public static function CiosTypesEditor ( $argv , $Content , $Options       ) {
     }                                                                        ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
+  $ORDERBY     = "order by `id` asc"                                         ;
+  $ORDERS      = self::GetTag         ( "order" , $argv                    ) ;
+  if                                  ( strlen ( $ORDERS ) > 0             ) {
+    $ORDERBY   = $ORDERS                                                     ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   $WIKI        = $Options             [ "Configure" ] [ "item" ]             ;
   $Templates   = $Options             [ "Templates"                        ] ;
   $EXTENSION   = $Options             [ "AITK"                             ] ;
@@ -1022,8 +1129,7 @@ public static function CiosTypesEditor ( $argv , $Content , $Options       ) {
                  " from {$TYPETAB}"                                          .
                  " where ( `id` >= {$MINV} )"                                .
                    " and ( `id` <= {$MAXV} )"                                .
-                 "{$USESQL}"                                                 .
-                 " order by `id` asc ;"                                      ;
+                 "{$USESQL} {$ORDERBY} ;"                                    ;
   $qq          = $DBX -> Query        ( $QQ                                ) ;
   if                                  ( $DBX -> hasResult ( $qq )          ) {
     while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH )                       ) {
@@ -1080,6 +1186,12 @@ public static function CiosTypes     ( $argv , $Content , $Options         ) {
   switch                             ( $Method                             ) {
     case "total"                                                             :
     return self::CiosTypeCounts      ( $argv , $Content , $Options         ) ;
+    case "base"                                                              :
+    return self::CiosTypeBase        ( $argv , $Content , $Options         ) ;
+    case "max"                                                               :
+    return self::CiosTypeMax         ( $argv , $Content , $Options         ) ;
+    case "amount"                                                            :
+    return self::CiosTypeAmount      ( $argv , $Content , $Options         ) ;
     case "listings"                                                          :
     return self::CiosTypeListings    ( $argv , $Content , $Options         ) ;
     case "editor"                                                            :
@@ -1130,6 +1242,14 @@ public static function CiosAJAX      ( $DB , $PICKDB , $TABLE , $HH , $AA  ) {
   $AA [ "Answer" ] = "Yes"                                                   ;
   ////////////////////////////////////////////////////////////////////////////
   return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// 民族語
+//////////////////////////////////////////////////////////////////////////////
+public static function Ethnologue    ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 }
