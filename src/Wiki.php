@@ -780,17 +780,357 @@ public static function ListDirectory ( $argv , $Content , $Options         ) {
   ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
-
+// 圖片
 //////////////////////////////////////////////////////////////////////////////
-
+public static function PictureUI     ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
 //////////////////////////////////////////////////////////////////////////////
-
+// 圖示
 //////////////////////////////////////////////////////////////////////////////
-
+public static function IconUI        ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
 //////////////////////////////////////////////////////////////////////////////
-
+// 頭像
 //////////////////////////////////////////////////////////////////////////////
-
+public static function AvatarUI      ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// YouTube
+//////////////////////////////////////////////////////////////////////////////
+public static function ExportYouTube ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// 時區
+//////////////////////////////////////////////////////////////////////////////
+public static function TimeZones     ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// 網站密碼
+//////////////////////////////////////////////////////////////////////////////
+public static function HtPasswd      ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// 資料庫
+//////////////////////////////////////////////////////////////////////////////
+public static function SqlInterface  ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $Options                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型計數
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypeCounts ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  $TOTAL = ""                                                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TYPETABLE   = self::GetAssignTable ( "`types`" , $argv , $Options       ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select count(*) from {$TYPETABLE}"                         .
+                 " where ( `used` > 0 ) ;"                                   ;
+  $TOTAL       = $DBX -> FetchOne     ( $QQ                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "{$Content}{$TOTAL}"                                                ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型列表
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypeListings ( $argv , $Content , $Options      ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PICKDB      = self::GetTag         ( "database" , $argv                 ) ;
+  $TYPETAB     = self::GetAssignTable ( "`types`" , $argv , $Options       ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DISPs       = array                (                                    ) ;
+  $COLs        = [ "id"       => "$(DISPLAY-COLUMN-ID)"                      ,
+                   "uuid"     => "$(DISPLAY-COLUMN-UUID)"                    ,
+                   "used"     => "$(DISPLAY-COLUMN-USED)"                    ,
+                   "name"     => "$(DISPLAY-COLUMN-NAME)"                    ,
+                   "head"     => "$(DISPLAY-COLUMN-HEAD)"                    ,
+                   "digits"   => "$(DISPLAY-COLUMN-DIGITS)"                  ,
+                   "ready"    => "$(DISPLAY-COLUMN-READY)"                   ,
+                   "comment"  => "$(DISPLAY-COLUMN-COMMENT)"                 ,
+                   "wiki"     => "$(DISPLAY-COLUMN-WIKI)"                    ,
+                   "ltime"    => "$(DISPLAY-COLUMN-UPDATE)"                ] ;
+  $KEYs        = array_keys           ( $COLs                              ) ;
+  foreach                             ( $KEYs as $K                        ) {
+    $S         = self::GetTag         ( $K , $argv                         ) ;
+    $S         = strtolower           ( $S                                 ) ;
+    $V         = $COLs                [ $K                                 ] ;
+    $DISPs [ $V ] = ""                                                       ;
+    if ( in_array ( $S , [ "false" , "no" , "hide" , "0" ] ) )               {
+      $DISPs [ $V ] = "display: none;"                                       ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $WIKI        = $Options             [ "Configure" ] [ "item" ]             ;
+  $Templates   = $Options             [ "Templates"                        ] ;
+  $EXTENSION   = $Options             [ "AITK"                             ] ;
+  $PATHX       = $Options             [ "Extension"                        ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TEMPLFILE   = $Templates           [ "CIOS::Types::Columns"             ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  $COLUMNS     = file_get_contents    ( $TEMPLFILE                         ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMFILE    = $Templates           [ "CIOS::Types::Item"                ] ;
+  $ITEMFILE    = "{$PATHX}/{$ITEMFILE}"                                      ;
+  $TEMPL       = file_get_contents    ( $ITEMFILE                          ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMs       = array                (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `id`,`uuid`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki`,`ltime`" .
+                 " from {$TYPETAB} where ( `used` > 0 ) order by `id` asc ;" ;
+  $qq          = $DBX -> Query        ( $QQ                                ) ;
+  if                                  ( $DBX -> hasResult ( $qq )          ) {
+    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH )                       ) {
+      $MAPX    = array                                                       (
+        "$(EXTENSION-PATH)"       =>   $EXTENSION                            ,
+        "$(WIKI-PATH)"            =>   $WIKI                                 ,
+        "$(CIOS-TYPE-DB)"         =>   $PICKDB                               ,
+        "$(CIOS-TYPE-TABLE)"      =>   $TYPETAB                              ,
+        "$(CIOS-TYPE-ID)"         =>   $rr [ 0 ]                             ,
+        "$(CIOS-TYPE-UUID)"       =>   $rr [ 1 ]                             ,
+        "$(CIOS-TYPE-USED)"       =>   $rr [ 2 ]                             ,
+        "$(CIOS-TYPE-NAME)"       =>   $rr [ 3 ]                             ,
+        "$(CIOS-TYPE-HEAD)"       =>   $rr [ 4 ]                             ,
+        "$(CIOS-TYPE-DIGITS)"     =>   $rr [ 5 ]                             ,
+        "$(CIOS-TYPE-READY)"      =>   $rr [ 6 ]                             ,
+        "$(CIOS-TYPE-COMMENT)"    =>   $rr [ 7 ]                             ,
+        "$(CIOS-TYPE-WIKI)"       =>   $rr [ 8 ]                             ,
+        "$(CIOS-TYPE-UPDATE)"     =>   $rr [ 9 ]                             ,
+      )                                                                      ;
+      $KEYs    = array_keys               ( $DISPs                         ) ;
+      foreach                             ( $KEYs as $K                    ) {
+        $MAPX [ $K ] = $DISPs [ $K ]                                         ;
+      }                                                                      ;
+      $HTML    = Strings::ReplaceByKeys   ( $TEMPL , $MAPX                 ) ;
+      array_push                          ( $ITEMs , $HTML                 ) ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMX       = implode              ( "\n" , $ITEMs                      ) ;
+  $MAPS        = array                                                       (
+    "$(EXTENSION-PATH)"       =>   $EXTENSION                                ,
+    "$(WIKI-PATH)"            =>   $WIKI                                     ,
+    "$(CIOS-TYPE-DB)"         =>   $PICKDB                                   ,
+    "$(CIOS-TYPE-TABLE)"      =>   $TYPETAB                                  ,
+    "$(CIOS-TYPE-LISTINGS)"   =>   $ITEMX                                    ,
+  )                                                                          ;
+  $KEYs        = array_keys           ( $DISPs                             ) ;
+  foreach                             ( $KEYs as $K                        ) {
+    $MAPS [ $K ] = $DISPs [ $K ]                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return Strings::ReplaceByKeys       ( $COLUMNS , $MAPS                   ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型編輯器
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypesEditor ( $argv , $Content , $Options       ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PICKDB      = self::GetTag         ( "database" , $argv                 ) ;
+  $TYPETAB     = self::GetAssignTable ( "`types`"  , $argv , $Options      ) ;
+  $MINV        = self::GetTag         ( "min"      , $argv                 ) ;
+  $MAXV        = self::GetTag         ( "max"      , $argv                 ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $USING       = self::GetTag         ( "using"    , $argv                 ) ;
+  $USING       = strtolower           ( $USING                             ) ;
+  $USESQL      = ""                                                          ;
+  if ( in_array ( $USING , [ "true" , "yes" ] ) )                            {
+    $USESQL    = " and ( `used` > 0 )"                                       ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DISPs       = array                (                                    ) ;
+  $COLs        = [ "id"       => "$(DISPLAY-COLUMN-ID)"                      ,
+                   "uuid"     => "$(DISPLAY-COLUMN-UUID)"                    ,
+                   "used"     => "$(DISPLAY-COLUMN-USED)"                    ,
+                   "name"     => "$(DISPLAY-COLUMN-NAME)"                    ,
+                   "head"     => "$(DISPLAY-COLUMN-HEAD)"                    ,
+                   "digits"   => "$(DISPLAY-COLUMN-DIGITS)"                  ,
+                   "ready"    => "$(DISPLAY-COLUMN-READY)"                   ,
+                   "comment"  => "$(DISPLAY-COLUMN-COMMENT)"                 ,
+                   "wiki"     => "$(DISPLAY-COLUMN-WIKI)"                    ,
+                   "ltime"    => "$(DISPLAY-COLUMN-UPDATE)"                ] ;
+  $KEYs        = array_keys           ( $COLs                              ) ;
+  foreach                             ( $KEYs as $K                        ) {
+    $S         = self::GetTag         ( $K , $argv                         ) ;
+    $S         = strtolower           ( $S                                 ) ;
+    $V         = $COLs                [ $K                                 ] ;
+    $DISPs [ $V ] = ""                                                       ;
+    if ( in_array ( $S , [ "false" , "no" , "hide" , "0" ] ) )               {
+      $DISPs [ $V ] = "display: none;"                                       ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $WIKI        = $Options             [ "Configure" ] [ "item" ]             ;
+  $Templates   = $Options             [ "Templates"                        ] ;
+  $EXTENSION   = $Options             [ "AITK"                             ] ;
+  $PATHX       = $Options             [ "Extension"                        ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TEMPLFILE   = $Templates           [ "CIOS::Types::Columns"             ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  $COLUMNS     = file_get_contents    ( $TEMPLFILE                         ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMFILE    = $Templates           [ "CIOS::Types::Editor"              ] ;
+  $ITEMFILE    = "{$PATHX}/{$ITEMFILE}"                                      ;
+  $TEMPL       = file_get_contents    ( $ITEMFILE                          ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMs       = array                (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `id`,`uuid`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki`,`ltime`" .
+                 " from {$TYPETAB}"                                          .
+                 " where ( `id` >= {$MINV} )"                                .
+                   " and ( `id` <= {$MAXV} )"                                .
+                 "{$USESQL}"                                                 .
+                 " order by `id` asc ;"                                      ;
+  $qq          = $DBX -> Query        ( $QQ                                ) ;
+  if                                  ( $DBX -> hasResult ( $qq )          ) {
+    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH )                       ) {
+      $MAPX    = array                                                       (
+        "$(EXTENSION-PATH)"       =>   $EXTENSION                            ,
+        "$(WIKI-PATH)"            =>   $WIKI                                 ,
+        "$(CIOS-TYPE-DB)"         =>   $PICKDB                               ,
+        "$(CIOS-TYPE-TABLE)"      =>   $TYPETAB                              ,
+        "$(CIOS-TYPE-ID)"         =>   $rr [ 0 ]                             ,
+        "$(CIOS-TYPE-UUID)"       =>   $rr [ 1 ]                             ,
+        "$(CIOS-TYPE-USED)"       =>   $rr [ 2 ]                             ,
+        "$(CIOS-TYPE-NAME)"       =>   $rr [ 3 ]                             ,
+        "$(CIOS-TYPE-HEAD)"       =>   $rr [ 4 ]                             ,
+        "$(CIOS-TYPE-DIGITS)"     =>   $rr [ 5 ]                             ,
+        "$(CIOS-TYPE-READY)"      =>   $rr [ 6 ]                             ,
+        "$(CIOS-TYPE-COMMENT)"    =>   $rr [ 7 ]                             ,
+        "$(CIOS-TYPE-WIKI)"       =>   $rr [ 8 ]                             ,
+        "$(CIOS-TYPE-UPDATE)"     =>   $rr [ 9 ]                             ,
+      )                                                                      ;
+      $KEYs    = array_keys               ( $DISPs                         ) ;
+      foreach                             ( $KEYs as $K                    ) {
+        $MAPX [ $K ] = $DISPs [ $K ]                                         ;
+      }                                                                      ;
+      $HTML    = Strings::ReplaceByKeys   ( $TEMPL , $MAPX                 ) ;
+      array_push                          ( $ITEMs , $HTML                 ) ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMX       = implode              ( "\n" , $ITEMs                      ) ;
+  $MAPS        = array                                                       (
+    "$(EXTENSION-PATH)"       =>   $EXTENSION                                ,
+    "$(WIKI-PATH)"            =>   $WIKI                                     ,
+    "$(CIOS-TYPE-DB)"         =>   $PICKDB                                   ,
+    "$(CIOS-TYPE-TABLE)"      =>   $TYPETAB                                  ,
+    "$(CIOS-TYPE-LISTINGS)"   =>   $ITEMX                                    ,
+  )                                                                          ;
+  $KEYs        = array_keys           ( $DISPs                             ) ;
+  foreach                             ( $KEYs as $K                        ) {
+    $MAPS [ $K ] = $DISPs [ $K ]                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return Strings::ReplaceByKeys       ( $COLUMNS , $MAPS                   ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS 物件類型處理進入點
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTypes     ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Method      = self::GetTag        ( "method" , $argv                    ) ;
+  $Method      = strtolower          ( $Method                             ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                             ( $Method                             ) {
+    case "total"                                                             :
+    return self::CiosTypeCounts      ( $argv , $Content , $Options         ) ;
+    case "listings"                                                          :
+    return self::CiosTypeListings    ( $argv , $Content , $Options         ) ;
+    case "editor"                                                            :
+    return self::CiosTypesEditor     ( $argv , $Content , $Options         ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $argv                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS Tags
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosTags      ( $argv , $Content , $Options         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Scope       = self::GetTag        ( "scope" , $argv                     ) ;
+  $Scope       = strtolower          ( $Scope                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                             ( $Scope                              ) {
+    case "types"                                                             :
+    return self::CiosTypes           ( $argv , $Content , $Options         ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode                 ( $argv                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+// CIOS AJAX進入點
+//////////////////////////////////////////////////////////////////////////////
+public static function CiosAJAX      ( $DB , $PICKDB , $TABLE , $HH , $AA  ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $METHOD      = $HH -> Parameter    ( "Method"                            ) ;
+  $ID          = $HH -> Parameter    ( "Id"                                ) ;
+  $COLUMN      = $HH -> Parameter    ( "Column"                            ) ;
+  $VALUE       = $HH -> Parameter    ( "Value"                             ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                             ( $METHOD                             ) {
+    case "Update"                                                            :
+      $DB     -> LockWrites          ( [ $TABLE                          ] ) ;
+      $QQ      = "update {$TABLE} set `{$COLUMN}` = ?"                       .
+                 " where ( `id` = {$ID} ) ;"                                 ;
+      $qq      = $DB -> Prepare      ( $QQ                                 ) ;
+      $qq     -> bind_param          ( 's' , $VALUE                        ) ;
+      $qq     -> execute             (                                     ) ;
+      $DB     -> UnlockTables        (                                     ) ;
+    break                                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer" ] = "Yes"                                                   ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
 //////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
