@@ -362,6 +362,7 @@ public static function FileEditorUI  ( $argv , $Content , $Options         ) {
   $TEMPLFILE   = $Templates          [ "File::Editor"                      ] ;
   $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
   ////////////////////////////////////////////////////////////////////////////
+  $READONLY    = ""                                                          ;
   $PARAMETERS  = array               (                                     ) ;
   $KEYs        = array_keys          ( $argv                               ) ;
   ////////////////////////////////////////////////////////////////////////////
@@ -378,6 +379,13 @@ public static function FileEditorUI  ( $argv , $Content , $Options         ) {
       case "label"                                                           :
         $Label = self::GetTag        ( $K , $argv                          ) ;
       break                                                                  ;
+      case "readonly"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ( strlen ( $RO ) <= 0 )                                        ||
+             ( in_array ( $RO , [ "true" , "yes" ] ) )                     ) {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
       default                                                                :
         $V     = self::GetTag        ( $K , $argv                          ) ;
         array_push                   ( $PARAMETERS , "{$K}='{$V}'"         ) ;
@@ -400,6 +408,7 @@ public static function FileEditorUI  ( $argv , $Content , $Options         ) {
     "$(EDITOR-PATH)"         =>   $DIRPATH                                   ,
     "$(EDITOR-FILENAME)"     =>   $Filename                                  ,
     "$(EDITOR-LOCALFILE)"    =>   $LOCALFILE                                 ,
+    "$(EDITOR-READONLY)"     =>   $READONLY                                  ,
   )                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   return Strings::ReplaceFileByKeys  ( $TEMPLFILE , $MAPS                  ) ;
@@ -1953,6 +1962,7 @@ public static function ParagraphUI   ( $argv , $Content , $Options         ) {
   $TEMPLFILE   = $Templates          [ "Paragraph::Editor"                 ] ;
   $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
   ////////////////////////////////////////////////////////////////////////////
+  $READONLY    = ""                                                          ;
   $PARAMETERS  = array               (                                     ) ;
   $KEYs        = array_keys          ( $argv                               ) ;
   ////////////////////////////////////////////////////////////////////////////
@@ -1969,6 +1979,13 @@ public static function ParagraphUI   ( $argv , $Content , $Options         ) {
       case "label"                                                           :
         $Label = self::GetTag        ( $K , $argv                          ) ;
       break                                                                  ;
+      case "readonly"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ( strlen ( $RO ) <= 0 )                                        ||
+             ( in_array ( $RO , [ "true" , "yes" ] ) )                     ) {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
       default                                                                :
         $V     = self::GetTag        ( $K , $argv                          ) ;
         array_push                   ( $PARAMETERS , "{$K}='{$V}'"         ) ;
@@ -1991,6 +2008,7 @@ public static function ParagraphUI   ( $argv , $Content , $Options         ) {
     "$(EDITOR-PATH)"         =>   $DIRPATH                                   ,
     "$(EDITOR-FILENAME)"     =>   $Filename                                  ,
     "$(EDITOR-LOCALFILE)"    =>   $LOCALFILE                                 ,
+    "$(EDITOR-READONLY)"     =>   $READONLY                                  ,
     "$(EDITOR-DELIMITER)"    =>   $Delimiter                                 ,
     "$(EDITOR-PARAGRAPH)"    =>   $Paragraph                                 ,
   )                                                                          ;
