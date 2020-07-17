@@ -177,9 +177,8 @@ public static function WildAJAX  ( $DB , $PICKDB , $HH , $AA , $Options    ) {
       ////////////////////////////////////////////////////////////////////////
       $FX     = $HH -> Parameter ( "Function"                              ) ;
       if                         ( strlen ( $FX ) > 0                      ) {
-        $FX   = "\AITK\Wiki::{$FX}"                                          ;
-        if                       ( function_exists ( $FX )                 ) {
-          $AA = $FX              ( $DB , $PICKDB , $HH , $AA , $Options    ) ;
+        if                       ( method_exists ( "\AITK\Wiki" , $FX )    ) {
+          $AA = self::$FX        ( $DB , $PICKDB , $HH , $AA , $Options    ) ;
         }                                                                    ;
       }                                                                      ;
       ////////////////////////////////////////////////////////////////////////
@@ -1427,47 +1426,75 @@ public static function Ethnologue    ( $argv , $Content , $Options         ) {
   ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
+// +| HtPwdListings |+
 // HtPassword Listings
 //////////////////////////////////////////////////////////////////////////////
 public static function HtPwdListings   ( $ID                                 ,
                                          $HTPASSWD                           ,
                                          $FILE                               ,
+                                         $LANG                               ,
                                          $WIDTH                              ,
                                          $APPEND                             ,
                                          $DELETE                           ) {
   ////////////////////////////////////////////////////////////////////////////
-  $ACCOUNTS   = file_get_contents      ( $FILE                             ) ;
-  $ACCTS      = explode                ( "\n" , $ACCOUNTS                  ) ;
-  $LISTS      = array                  (                                   ) ;
+  $canAppend    = strtolower           ( $APPEND                           ) ;
+  $DISPAPPEND   = ""                                                         ;
+  if ( in_array ( $canAppend , [ "yes" , "true" ] ) )                        {
+    $canAppend  = true                                                       ;
+  } else                                                                     {
+    $canAppend  = false                                                      ;
+    $DISPAPPEND = "display: none;"                                           ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $canDelete    = strtolower           ( $DELETE                           ) ;
+  if ( in_array ( $canDelete , [ "yes" , "true" ] ) )                        {
+    $canDelete  = true                                                       ;
+  } else                                                                     {
+    $canDelete  = false                                                      ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ACCOUNTS     = file_get_contents    ( $FILE                             ) ;
+  $ACCTS        = explode              ( "\n" , $ACCOUNTS                  ) ;
+  $LISTS        = array                (                                   ) ;
   foreach                              ( $ACCTS as $act                    ) {
     if                                 ( strlen ( $act ) > 0               ) {
-      $LL     = explode                ( ":" , $act                        ) ;
+      $LL       = explode              ( ":" , $act                        ) ;
       if                               ( count ( $LL ) > 1                 ) {
         array_push                     ( $LISTS , $LL [ 0 ]                ) ;
       }                                                                      ;
     }                                                                        ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $LINES      = array                  (                                   ) ;
+  $LINES        = array                (                                   ) ;
   if                                   ( count ( $LISTS ) > 0              ) {
     //////////////////////////////////////////////////////////////////////////
-    $TITLE    = "<tr><td colspan=2 id='AccountTitle'>Accounts</td></tr>"     ;
-    $SPACE    = "<tr><td colspan=2>&nbsp;</td></tr>"                         ;
+    $TITLE      = "<tr>"                                                     .
+                  "<td colspan=2 id='AccountTitle'>"                         .
+                  "Accounts"                                                 .
+                  "</td>"                                                    .
+                  "</tr>"                                                    ;
+    $SPACE      = "<tr><td colspan=2>&nbsp;</td></tr>"                       ;
     //////////////////////////////////////////////////////////////////////////
     array_push                         ( $LINES , $TITLE                   ) ;
     array_push                         ( $LINES , $SPACE                   ) ;
     //////////////////////////////////////////////////////////////////////////
     foreach                            ( $LISTS as $L                      ) {
-      $JSC    = "DeleteHtUser('{$L}');"                                      ;
-      $ATDX   = "<td class='AccountCell'>{$L}</td>"                          ;
-      if                               ( $DELETE                           ) {
-        $IMGX = "<i class='fas fa-trash'></i>"      ;
-        $IMGC = "<button class='btn-sm btn-warning' onclick=\"{$JSC}\">{$IMGX}</button>" ;
-      } else                                                                 {
-        $IMGC = ""                                                           ;
+      $JSC      = "DeleteHtUser('{$L}');"                                    ;
+      $ATDX     = "<td class='AccountCell'>{$L}</td>"                        ;
+      $IMGC     = ""                                                         ;
+      if                               ( $canDelete                        ) {
+        $IMGX   = "<i class='fas fa-trash'></i>"                             ;
+        $IMGC   = "<button"                                                  .
+                  " class='btn-sm btn-warning'"                              .
+                  " onclick=\"{$JSC}\">{$IMGX}</button>"                     ;
       }                                                                      ;
-      $ATIM   = "<td nowrap='nowrap' width='1%' class='AccountCell'>{$IMGC}</td>" ;
-      $LINE   = "<tr>\n{$ATIM}\n{$ATDX}\n</tr>"                              ;
+      $ATIM     = "<td"                                                      .
+                  " nowrap='nowrap'"                                         .
+                  " width='1%'"                                              .
+                  " class='AccountCell'>"                                    .
+                  "{$IMGC}"                                                  .
+                  "</td>"                                                    ;
+      $LINE     = "<tr>\n{$ATIM}\n{$ATDX}\n</tr>"                            ;
       array_push                       ( $LINES , $LINE                    ) ;
     }                                                                        ;
     //////////////////////////////////////////////////////////////////////////
@@ -1476,13 +1503,101 @@ public static function HtPwdListings   ( $ID                                 ,
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   $MAPS        = array                                                       (
-    "$(ACCOUNT-LISTINGS)" => implode   ( "" , $LINES                       ) ,
-    "$(PASSWORD-WIDTH)"   => $WIDTH                                          ,
+    "$(ACCOUNT-LISTINGS)"  => implode   ( "" , $LINES                      ) ,
+    "$(PASSWORD-ID)"       => $ID                                            ,
+    "$(PASSWORD-ROOT)"     => $HTPASSWD                                      ,
+    "$(PASSWORD-FILE)"     => $FILE                                          ,
+    "$(PASSWORD-LANGUAGE)" => $LANG                                          ,
+    "$(PASSWORD-WIDTH)"    => $WIDTH                                         ,
+    "$(PASSWORD-APPEND)"   => $APPEND                                        ,
+    "$(PASSWORD-DELETE)"   => $DELETE                                        ,
+    "$(DISPLAY-APPEND)"    => $DISPAPPEND                                    ,
   )                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   return Strings::ReplaceFileByKeys    ( $HTPASSWD , $MAPS                 ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
+// -| HtPwdListings |-
+//////////////////////////////////////////////////////////////////////////////
+// +| AppendHtPassword |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AppendHtPassword ( $DB                                ,
+                                          $PICKDB                            ,
+                                          $HH                                ,
+                                          $AA                                ,
+                                          $Options                         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $PROGRAM  = $Options [ "Configure" ] [ "htpasswd" ]                        ;
+  $ID       = $HH -> Parameter ( "ID"                                      ) ;
+  $HTPASSWD = $HH -> Parameter ( "Root"                                    ) ;
+  $LANG     = $HH -> Parameter ( "Language"                                ) ;
+  $FILE     = $HH -> Parameter ( "File"                                    ) ;
+  $WIDTH    = $HH -> Parameter ( "Width"                                   ) ;
+  $APPEND   = $HH -> Parameter ( "Append"                                  ) ;
+  $DELETE   = $HH -> Parameter ( "Delete"                                  ) ;
+  $ACCOUNT  = $HH -> Parameter ( "Account"                                 ) ;
+  $PASSWD   = $HH -> Parameter ( "Password"                                ) ;
+  $AGAIN    = $HH -> Parameter ( "Again"                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $EXECHT   = "{$PROGRAM} -mb {$FILE} {$ACCOUNT} {$PASSWD}"                  ;
+  exec                                 ( $EXECHT                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HT       = self::HtPwdListings      ( $ID                                 ,
+                                         $HTPASSWD                           ,
+                                         $FILE                               ,
+                                         $LANG                               ,
+                                         $WIDTH                              ,
+                                         $APPEND                             ,
+                                         $DELETE                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Message" ] = $HT                                                    ;
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AppendHtPassword |-
+//////////////////////////////////////////////////////////////////////////////
+// +| DeleteHtPassword |+
+//////////////////////////////////////////////////////////////////////////////
+public static function DeleteHtPassword ( $DB                                ,
+                                          $PICKDB                            ,
+                                          $HH                                ,
+                                          $AA                                ,
+                                          $Options                         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $PROGRAM  = $Options [ "Configure" ] [ "htpasswd" ]                        ;
+  $ID       = $HH -> Parameter ( "ID"                                      ) ;
+  $HTPASSWD = $HH -> Parameter ( "Root"                                    ) ;
+  $LANG     = $HH -> Parameter ( "Language"                                ) ;
+  $FILE     = $HH -> Parameter ( "File"                                    ) ;
+  $WIDTH    = $HH -> Parameter ( "Width"                                   ) ;
+  $APPEND   = $HH -> Parameter ( "Append"                                  ) ;
+  $DELETE   = $HH -> Parameter ( "Delete"                                  ) ;
+  $ACCOUNT  = $HH -> Parameter ( "Account"                                 ) ;
+  $PASSWD   = $HH -> Parameter ( "Password"                                ) ;
+  $AGAIN    = $HH -> Parameter ( "Again"                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $EXECHT   = "{$PROGRAM} -D {$FILE} {$ACCOUNT}"                             ;
+  exec                                 ( $EXECHT                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HT       = self::HtPwdListings      ( $ID                                 ,
+                                         $HTPASSWD                           ,
+                                         $FILE                               ,
+                                         $LANG                               ,
+                                         $WIDTH                              ,
+                                         $APPEND                             ,
+                                         $DELETE                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Message" ] = $HT                                                    ;
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| DeleteHtPassword |-
+//////////////////////////////////////////////////////////////////////////////
+// +| HtPassword |+
 // HtPassword
 //////////////////////////////////////////////////////////////////////////////
 public static function HtPassword      ( $args , $argv , $Options          ) {
@@ -1524,12 +1639,15 @@ public static function HtPassword      ( $args , $argv , $Options          ) {
   $LST         = self::HtPwdListings   ( $ID                                 ,
                                          $HTPASSWD                           ,
                                          $FILE                               ,
+                                         $LANG                               ,
                                          $WIDTH                              ,
                                          $canAppend                          ,
                                          $canDelete                        ) ;
   ////////////////////////////////////////////////////////////////////////////
   return "<div id='{$ID}'>{$LST}</div>"                                      ;
 }
+//////////////////////////////////////////////////////////////////////////////
+// -| HtPassword |-
 //////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
