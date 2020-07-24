@@ -1011,13 +1011,466 @@ public static function SettingsUI    ( $argv , $Content , $Options         ) {
 //////////////////////////////////////////////////////////////////////////////
 // -| SettingsUI |-
 //////////////////////////////////////////////////////////////////////////////
+// +| CatalogFolderFiles |+
+// 分類檔案項目
+//////////////////////////////////////////////////////////////////////////////
+public static function CatalogFolderFiles ( $CURRENT , $FILES              ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $SUBDIRS      = array                   (                                ) ;
+  $FILEX        = array                   (                                ) ;
+  $ITEMS        = array                   (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $FILES as $F                   ) {
+    $FILE       = "{$CURRENT}/{$F}"                                          ;
+    if                                    ( ( $F == "."                  )  or
+                                            ( $F == ".."                 ) ) {
+    } else
+    if                                    ( is_dir ( $FILE )               ) {
+      array_push                          ( $SUBDIRS , $F                  ) ;
+    } else                                                                   {
+      array_push                          ( $FILEX   , $F                  ) ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $SUBDIRS as $F                 ) {
+    array_push                            ( $ITEMS    , $F                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $FILEX   as $F                 ) {
+    array_push                            ( $ITEMS    , $F                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $ITEMS                                                              ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| CatalogFolderFiles |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ListFolderItems |+
+// 列出檔案項目
+//////////////////////////////////////////////////////////////////////////////
+public static function ListFolderItems  ( $CURRENT                         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $FILEs   = array                      (                                  ) ;
+  $HDIR    = opendir                    ( $CURRENT                         ) ;
+  while ( ( $F = readdir ( $HDIR ) ) !== false )                             {
+    array_push                          ( $FILEs , $F                      ) ;
+  }                                                                          ;
+  closedir                              ( $HDIR                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $FILEs                                                              ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ListFolderItems |-
+//////////////////////////////////////////////////////////////////////////////
+// +| GrepFolderItems |+
+// 列出檔案項目
+//////////////////////////////////////////////////////////////////////////////
+public static function GrepFolderItems    ( $CURRENT , $EXTS               ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $FILES        = self::ListFolderItems   ( $CURRENT                       ) ;
+  $EXT          = explode                 ( " " , $EXTS                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SUBDIRS      = array                   (                                ) ;
+  $FILEX        = array                   (                                ) ;
+  $ITEMS        = array                   (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $FILES as $F                   ) {
+    $FILE       = "{$CURRENT}/{$F}"                                          ;
+    if                                    ( ( $F == "."                  )  or
+                                            ( $F == ".."                 ) ) {
+    } else
+    if                                    ( is_dir ( $FILE )               ) {
+      array_push                          ( $SUBDIRS , $F                  ) ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $CUX          = $CURRENT                                                   ;
+  $CUX          = str_replace             ( "\\" , "/" , $CUX              ) ;
+  $CUX          = str_replace             ( "//" , "/" , $CUX              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $EXT as $E                     ) {
+    foreach                               ( glob ("{$CUX}/{$E}") as $F     ) {
+      $X        = str_replace             ( "\\"      , "/" , $F           ) ;
+      $X        = str_replace             ( "//"      , "/" , $X           ) ;
+      $X        = str_replace             ( "{$CUX}/" , ""  , $X           ) ;
+      $X        = str_replace             ( $CUX      , ""  , $X           ) ;
+      if                                  ( ! in_array ( $X , $SUBDIRS )   ) {
+        if                                ( ! in_array ( $X , $FILEX   )   ) {
+          array_push                      ( $FILEX , $X                    ) ;
+        }                                                                    ;
+      }                                                                      ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $SUBDIRS as $F                 ) {
+    array_push                            ( $ITEMS    , $F                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                                 ( $FILEX   as $F                 ) {
+    array_push                            ( $ITEMS    , $F                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $ITEMS                                                              ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| GrepFolderItems |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ParentFolderItem |+
+// 檔案項目
+//////////////////////////////////////////////////////////////////////////////
+public static function ParentFolderItem ( $ID                                ,
+                                          $BROWSABLE                         ,
+                                          $DOWNLOAD                          ,
+                                          $DIRECTORY                         ,
+                                          $PATH                              ,
+                                          $EXTS                              ,
+                                          $EXTENSION                         ,
+                                          $EDITABLE                          ,
+                                          $TEMPL                             ,
+                                          $ROOT                            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  if                                    ( ! $EDITABLE                      ) {
+    return ""                                                                ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $XENTRY    = $TEMPL                                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ( strlen ( $PATH ) <= 0 ) or ( $PATH == "/" ) )                       {
+    $DIRPATH = ""                                                            ;
+    $CURRENT = ""                                                            ;
+    $XICON   = "{$EXTENSION}/images/24x24/catalog.png"                       ;
+  } else                                                                     {
+    $DIRPATH = $DIRECTORY                                                    ;
+    $CURRENT = "{$ROOT}{$PATH}/.."                                           ;
+    $CURRENT = str_replace              ( "//"  , "/" , $CURRENT           ) ;
+    $CURRENT = dirname                  ( dirname ( $CURRENT )             ) ;
+    $CURRENT = str_replace              ( "\\"  , "/" , $CURRENT           ) ;
+    $CURRENT = str_replace              ( $ROOT , ""  , $CURRENT           ) ;
+    $CURRENT = str_replace              ( "//"  , "/" , $CURRENT           ) ;
+    $XICON   = "{$EXTENSION}/images/24x24/courses.png"                       ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $FTYPE     = "目錄" ;
+  $FILEXT    = ""                                                            ;
+  $FILESIZE  = ""                                                            ;
+  $FILEDT    = ""                                                            ;
+  ////////////////////////////////////////////////////////////////////////////
+  $JSC   = "AitkChangeDirectory('{$ID}','{$BROWSABLE}','{$DOWNLOAD}','{$DIRPATH}','{$CURRENT}','{$EXTS}');" ;
+  $ONCLICK = " onclick=\"{$JSC}\""                                           ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SDIRX     = "<a {$ONCLICK}>..</a>"                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ICON      = "<img src='{$XICON}' width='24' height='24'{$ONCLICK}>"       ;
+  ////////////////////////////////////////////////////////////////////////////
+  $XENTRY    = str_replace          ( "$(FILE-ICON)"                         ,
+                                      $ICON                                  ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILENAME)"                          ,
+                                      $SDIRX                                 ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-TYPE)"                         ,
+                                      $FTYPE                                 ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-EXT)"                          ,
+                                      $FILEXT                                ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-SIZE)"                         ,
+                                      $FILESIZE                              ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-DATE-TIME)"                    ,
+                                      $FILEDT                                ,
+                                      $XENTRY                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $XENTRY                                                             ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ParentFolderItem |-
+//////////////////////////////////////////////////////////////////////////////
+// +| CreateFolderItem |+
+// 檔案項目
+//////////////////////////////////////////////////////////////////////////////
+public static function CreateFolderItem ( $ID                                ,
+                                          $BROWSABLE                         ,
+                                          $DOWNLOAD                          ,
+                                          $DIRECTORY                         ,
+                                          $PATH                              ,
+                                          $EXTS                              ,
+                                          $EXTENSION                         ,
+                                          $WIKI                              ,
+                                          $EDITABLE                          ,
+                                          $TEMPL                             ,
+                                          $ROOT                              ,
+                                          $FILE                            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $XENTRY    = $TEMPL                                                        ;
+  $CURRENT   = "{$ROOT}{$PATH}"                                              ;
+  $FNAME     = "{$CURRENT}/{$FILE}"                                          ;
+  $isDir     = is_dir                   ( $FNAME                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ONCLICK   = ""                                                            ;
+  $FTYPE     = "檔案" ;
+  if                                    ( $isDir                           ) {
+    //////////////////////////////////////////////////////////////////////////
+    $FTYPE   = "目錄" ;
+    //////////////////////////////////////////////////////////////////////////
+    if                                  ( $EDITABLE                        ) {
+      ////////////////////////////////////////////////////////////////////////
+      $FDIR  = "{$PATH}/{$FILE}"                                             ;
+      ////////////////////////////////////////////////////////////////////////
+      $JSC   = "AitkChangeDirectory('{$ID}','{$BROWSABLE}','{$DOWNLOAD}','{$DIRECTORY}','{$FDIR}','{$EXTS}');" ;
+      $ONCLICK = " onclick=\"{$JSC}\""                                       ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SICON     = "{$EXTENSION}/images/24x24/Books.png"                         ;
+  $XICON     = "{$EXTENSION}/images/24x24/courses.png"                       ;
+  $VICON     = $SICON                                                        ;
+  if                                    ( $isDir                           ) {
+    $VICON   = $XICON                                                        ;
+  }                                                                          ;
+  $ICON      = "<img src='{$VICON}' width='24' height='24'{$ONCLICK}>"       ;
+  ////////////////////////////////////////////////////////////////////////////
+  $FILEXT    = ""                                                            ;
+  $FILESIZE  = ""                                                            ;
+  $FILEDT    = ""                                                            ;
+  $SDIRX     = $FILE                                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                ( $isDir                               ) {
+    if                              ( $EDITABLE                            ) {
+      $SDIRX = "<a {$ONCLICK}>{$FILE}</a>"                                   ;
+    }                                                                        ;
+  } else                                                                     {
+    //////////////////////////////////////////////////////////////////////////
+    $FILEXT  = pathinfo             ( $FNAME , PATHINFO_EXTENSION          ) ;
+    $FILESIZE = filesize            ( $FNAME                               ) ;
+    $FILEDT  = date                 ( "F d Y H:i:s" , filemtime ( $FNAME ) ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $DN      = strtolower           ( $DOWNLOAD                            ) ;
+    if ( in_array ( $DN , [ "yes" , "true" ] ) )                             {
+      ////////////////////////////////////////////////////////////////////////
+      $WW    = $WIKI                                                         ;
+      $WW    = str_replace          ( "//" , "/" , $WW                     ) ;
+      $WW    = str_replace          ( "\\" , "/" , $WW                     ) ;
+      $HREF  = dirname              ( $FNAME                               ) ;
+      $HREF  = "{$HREF}/{$FILE}"                                             ;
+      $HREF  = str_replace          ( "//" , "/" , $HREF                   ) ;
+      $HREF  = str_replace          ( "\\" , "/" , $HREF                   ) ;
+      $HREF  = str_replace          ( $WW  , ""  , $HREF                   ) ;
+      ////////////////////////////////////////////////////////////////////////
+      $SDIRX = "<a href='{$HREF}' download>{$SDIRX}</a>"                     ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $XENTRY    = str_replace          ( "$(FILE-ICON)"                         ,
+                                      $ICON                                  ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILENAME)"                          ,
+                                      $SDIRX                                 ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-TYPE)"                         ,
+                                      $FTYPE                                 ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-EXT)"                          ,
+                                      $FILEXT                                ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-SIZE)"                         ,
+                                      $FILESIZE                              ,
+                                      $XENTRY                              ) ;
+  $XENTRY    = str_replace          ( "$(FILE-DATE-TIME)"                    ,
+                                      $FILEDT                                ,
+                                      $XENTRY                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $XENTRY                                                             ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| CreateFolderItem |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ComposeDirectory |+
+// 製作目錄資訊
+//////////////////////////////////////////////////////////////////////////////
+public static function ComposeDirectory ( $ID                                ,
+                                          $BROWSABLE                         ,
+                                          $DOWNLOAD                          ,
+                                          $DIRECTORY                         ,
+                                          $PATH                              ,
+                                          $EXTS                              ,
+                                          $Options                         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Templates   = $Options               [ "Templates"                      ] ;
+  $EXTENSION   = $Options               [ "AITK"                           ] ;
+  $WIKI        = $Options               [ "Wiki"                           ] ;
+  $PATHX       = $Options               [ "Extension"                      ] ;
+  $DIRS        = $Options               [ "Directory"                      ] ;
+  $KEYs        = array_keys             ( $DIRS                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $FOLDER      = $Templates             [ "Directory::Folder"              ] ;
+  $ENTRY       = $Templates             [ "Directory::Entry"               ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $FTEMPX      = "{$PATHX}/{$FOLDER}"                                        ;
+  $FENTRY      = "{$PATHX}/{$ENTRY}"                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $FTEMPL      = file_get_contents      ( $FTEMPX                          ) ;
+  $ETEMPL      = file_get_contents      ( $FENTRY                          ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $BROWSABLE   = strtolower             ( $BROWSABLE                       ) ;
+  $EDITABLE    = in_array               ( $BROWSABLE , [ "yes" , "true" ]  ) ;
+  $ITEMs       = array                  (                                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                    ( in_array ( $DIRECTORY , $KEYs )  ) {
+    //////////////////////////////////////////////////////////////////////////
+    $ROOT      = $DIRS                  [ $DIRECTORY                       ] ;
+    $CURRENT   = "{$ROOT}{$PATH}"                                            ;
+    //////////////////////////////////////////////////////////////////////////
+    if                                  ( strlen ( $EXTS ) > 0             ) {
+      ////////////////////////////////////////////////////////////////////////
+      $FILEs   = self::GrepFolderItems  ( $CURRENT , $EXTS                 ) ;
+      ////////////////////////////////////////////////////////////////////////
+    } else                                                                   {
+      ////////////////////////////////////////////////////////////////////////
+      $FILEs   = self::ListFolderItems  ( $CURRENT                         ) ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    $FILEs     = self::CatalogFolderFiles ( $CURRENT , $FILEs              ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $PFI       = self::ParentFolderItem ( $ID                                ,
+                                          $BROWSABLE                         ,
+                                          $DOWNLOAD                          ,
+                                          $DIRECTORY                         ,
+                                          $PATH                              ,
+                                          $EXTS                              ,
+                                          $EXTENSION                         ,
+                                          $EDITABLE                          ,
+                                          $ETEMPL                            ,
+                                          $ROOT                            ) ;
+    if                                  ( strlen ( $PFI ) > 0              ) {
+      array_push                        ( $ITEMs , $PFI                    ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    foreach                             ( $FILEs as $F                     ) {
+      ////////////////////////////////////////////////////////////////////////
+      $CFI     = self::CreateFolderItem ( $ID                                ,
+                                          $BROWSABLE                         ,
+                                          $DOWNLOAD                          ,
+                                          $DIRECTORY                         ,
+                                          $PATH                              ,
+                                          $EXTS                              ,
+                                          $EXTENSION                         ,
+                                          $WIKI                              ,
+                                          $EDITABLE                          ,
+                                          $ETEMPL                            ,
+                                          $ROOT                              ,
+                                          $F                               ) ;
+      array_push                        ( $ITEMs , $CFI                    ) ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  } else                                                                     {
+    foreach                             ( $KEYs as $K                      ) {
+      ////////////////////////////////////////////////////////////////////////
+      $XENTRY  = $ETEMPL                                                     ;
+      ////////////////////////////////////////////////////////////////////////
+      $ONCLICK = ""                                                          ;
+      if                                ( $EDITABLE                        ) {
+        $JSC   = "AitkChangeDirectory('{$ID}','{$BROWSABLE}','{$DOWNLOAD}','{$K}','/','{$EXTS}');" ;
+        $ONCLICK = " onclick=\"{$JSC}\""                                     ;
+      }                                                                      ;
+      ////////////////////////////////////////////////////////////////////////
+      $SICON   = "{$EXTENSION}/images/24x24/catalog.png"                     ;
+      $ICON    = "<img src='{$SICON}' width='24' height='24'{$ONCLICK}>"     ;
+      ////////////////////////////////////////////////////////////////////////
+      if                                ( $EDITABLE                        ) {
+        $SDIRX = "<a {$ONCLICK}>{$K}</a>"                                    ;
+      } else                                                                 {
+        $SDIRX = $K                                                          ;
+      }                                                                      ;
+      ////////////////////////////////////////////////////////////////////////
+      $XENTRY  = str_replace            ( "$(FILE-ICON)"                     ,
+                                          $ICON                              ,
+                                          $XENTRY                          ) ;
+      $XENTRY  = str_replace            ( "$(FILENAME)"                      ,
+                                          $SDIRX                             ,
+                                          $XENTRY                          ) ;
+      $XENTRY  = str_replace            ( "$(FILE-TYPE)"                     ,
+                                          "頂層目錄" ,
+                                          $XENTRY                          ) ;
+      $XENTRY  = str_replace            ( "$(FILE-EXT)"                      ,
+                                          ""                                 ,
+                                          $XENTRY                          ) ;
+      $XENTRY  = str_replace            ( "$(FILE-SIZE)"                     ,
+                                          ""                                 ,
+                                          $XENTRY                          ) ;
+      $XENTRY  = str_replace            ( "$(FILE-DATE-TIME)"                ,
+                                          ""                                 ,
+                                          $XENTRY                          ) ;
+      ////////////////////////////////////////////////////////////////////////
+      array_push                        ( $ITEMs , $XENTRY                 ) ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $LISTINGS    = implode                ( "\n" , $ITEMs                    ) ;
+  return str_replace     ( "$(FILE-FOLDER-LISTINGS)" , $LISTINGS , $FTEMPL ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ComposeDirectory |-
+//////////////////////////////////////////////////////////////////////////////
+// +| FetchDirectory |+
+// AJAX抓取目錄列表
+//////////////////////////////////////////////////////////////////////////////
+public static function FetchDirectory ( $DB                                  ,
+                                        $PICKDB                              ,
+                                        $HH                                  ,
+                                        $AA                                  ,
+                                        $Options                           ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $ID        = $HH -> Parameter       ( "Id"                               ) ;
+  $BROWSABLE = $HH -> Parameter       ( "Browsable"                        ) ;
+  $DOWNLOAD  = $HH -> Parameter       ( "Download"                         ) ;
+  $DIRECTORY = $HH -> Parameter       ( "Directory"                        ) ;
+  $PATH      = $HH -> Parameter       ( "Path"                             ) ;
+  $EXTS      = $HH -> Parameter       ( "Extensions"                       ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MSG       = self::ComposeDirectory ( $ID                                  ,
+                                        $BROWSABLE                           ,
+                                        $DOWNLOAD                            ,
+                                        $DIRECTORY                           ,
+                                        $PATH                                ,
+                                        $EXTS                                ,
+                                        $Options                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Message" ] = $MSG                                                   ;
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| FetchDirectory |-
+//////////////////////////////////////////////////////////////////////////////
 // +| ListDirectory |+
 // 目錄列表
 //////////////////////////////////////////////////////////////////////////////
-public static function ListDirectory ( $argv , $Content , $Options         ) {
+public static function ListDirectory  ( $argv , $Content , $Options        ) {
   ////////////////////////////////////////////////////////////////////////////
-  return json_encode                 ( $Options                            ) ;
+  $BROWSABLE = self::GetTag           ( "browsable"  , $argv               ) ;
+  $DOWNLOAD  = self::GetTag           ( "download"   , $argv               ) ;
+  $DIRECTORY = self::GetTag           ( "directory"  , $argv               ) ;
+  $PATH      = self::GetTag           ( "path"       , $argv               ) ;
+  $EXTS      = self::GetTag           ( "extensions" , $argv               ) ;
+  $ID        = self::RandomString     ( "Folder-"    , 40                  ) ;
   ////////////////////////////////////////////////////////////////////////////
+  $MSG       = self::ComposeDirectory ( $ID                                  ,
+                                        $BROWSABLE                           ,
+                                        $DOWNLOAD                            ,
+                                        $DIRECTORY                           ,
+                                        $PATH                                ,
+                                        $EXTS                                ,
+                                        $Options                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "<div id='{$ID}'>{$MSG}</div>"                                      ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ListDirectory |-
