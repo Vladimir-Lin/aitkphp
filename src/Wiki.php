@@ -1052,6 +1052,9 @@ public static function ListFolderItems  ( $CURRENT                         ) {
   ////////////////////////////////////////////////////////////////////////////
   $FILEs   = array                      (                                  ) ;
   $HDIR    = opendir                    ( $CURRENT                         ) ;
+  if                                    ( ! $HDIR                          ) {
+    return $FILEs                                                            ;
+  }                                                                          ;
   while ( ( $F = readdir ( $HDIR ) ) !== false )                             {
     array_push                          ( $FILEs , $F                      ) ;
   }                                                                          ;
