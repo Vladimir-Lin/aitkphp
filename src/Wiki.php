@@ -1481,10 +1481,47 @@ public static function ListDirectory  ( $argv , $Content , $Options        ) {
 // +| PictureUI |+
 // 圖片
 //////////////////////////////////////////////////////////////////////////////
-public static function PictureUI     ( $argv , $Content , $Options         ) {
+public static function PictureUI        ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
-  return json_encode                 ( $Options                            ) ;
+  $ID           = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
+  $DBV          = ""                                                         ;
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/image.php?ID={$ID}{$DBV}"             ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| PictureUI |-
@@ -1492,10 +1529,65 @@ public static function PictureUI     ( $argv , $Content , $Options         ) {
 // +| IconUI |+
 // 圖示
 //////////////////////////////////////////////////////////////////////////////
-public static function IconUI        ( $argv , $Content , $Options         ) {
+public static function IconUI           ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
-  return json_encode                 ( $Options                            ) ;
+  $ID           = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
+  $DBV          = ""                                                         ;
+  $OWNER        = ""                                                         ;
+  $REL          = ""                                                         ;
+  $DEF          = ""                                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      case "default"                                                         :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $DEF    = "&Default={$V}"                                            ;
+      break                                                                  ;
+      case "owner"                                                           :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $OWNER  = "&Owner={$V}"                                              ;
+      break                                                                  ;
+      case "relation"                                                        :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $REL    = "&Relation={$V}"                                           ;
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS       = "{$DBV}{$OWNER}{$REL}{$DEF}"                               ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/image.php?ID={$ID}{$PARAMS}"          ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| IconUI |-
@@ -1505,8 +1597,69 @@ public static function IconUI        ( $argv , $Content , $Options         ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function AvatarUI      ( $argv , $Content , $Options         ) {
   ////////////////////////////////////////////////////////////////////////////
-  return json_encode                 ( $Options                            ) ;
   ////////////////////////////////////////////////////////////////////////////
+  $ID           = self::GetTag          ( "id"       , $argv               ) ;
+  $UUID         = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                     ( strlen ( $ID ) > 0                              ) {
+    $UUID = str_replace  ( "act1" , "14000000000" , $ID                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBV          = ""                                                         ;
+  $WIDTH        = ""                                                         ;
+  $HEIGHT       = ""                                                         ;
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      case "width"                                                           :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+          $WIDTH  = "&Width={$V}"                                            ;
+        }                                                                    ;
+      break                                                                  ;
+      case "height"                                                          :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+          $HEIGHT = "&Height={$V}"                                           ;
+        }                                                                    ;
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS       = "{$DBV}{$WIDTH}{$HEIGHT}"                                  ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/who.php?Uuid={$UUID}{$PARAMS}"        ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| AvatarUI |-
@@ -1516,8 +1669,58 @@ public static function AvatarUI      ( $argv , $Content , $Options         ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function ExportYouTube ( $argv , $Content , $Options         ) {
   ////////////////////////////////////////////////////////////////////////////
-  return json_encode                 ( $Options                            ) ;
+  $TAG         = "iframe"                                                    ;
+  $HREF        = "https://www.youtube.com/embed"                             ;
+  $YOUT        = ""                                                          ;
+  $ALLOW       = "accelerometer;"                                            .
+                 " autoplay;"                                                .
+                 " encrypted-media;"                                         .
+                 " gyroscope;"                                               .
+                 " picture-in-picture"                                       ;
   ////////////////////////////////////////////////////////////////////////////
+  $PARAMETERS  = array               (                                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMETERS [ "width"       ] = "640px"                                    ;
+  $PARAMETERS [ "height"      ] = "360px"                                    ;
+  $PARAMETERS [ "frameborder" ] = "0"                                        ;
+  $PARAMETERS [ "allow"       ] = $ALLOW                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs        = array_keys          ( $argv                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                            ( $KEYs as $K                         ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S         = strtolower          ( $K                                  ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                           ( $S                                  ) {
+      case "function"                                                        :
+      break                                                                  ;
+      case "id"                                                              :
+        $YOUT  = self::GetTag        ( $K    , $argv                       ) ;
+        $SRC         = "{$HREF}/{$YOUT}"                                     ;
+        $PARAMETERS [ "src" ] = $SRC                                         ;
+      break                                                                  ;
+      default                                                                :
+        $V     = self::GetTag        ( $K    , $argv                       ) ;
+        $PARAMETERS [ $K ] = $V                                              ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HT          = new Html            (                                     ) ;
+  $HT         -> setSplitter         ( "\n"                                ) ;
+  $HT         -> setTag              ( $TAG                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs        = array_keys          ( $PARAMETERS                         ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                            ( $KEYs as $K                         ) {
+    $HT       -> AddPair             ( $K , $PARAMETERS [ $K ]             ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HT         -> AddMember           ( "allowfullscreen"                   ) ;
+  $HT         -> AddText             ( $Content                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HT  -> Content             (                                     ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ExportYouTube |-
@@ -3087,52 +3290,169 @@ public static function ParagraphUI   ( $argv , $Content , $Options         ) {
 //////////////////////////////////////////////////////////////////////////////
 // -| ParagraphUI |-
 //////////////////////////////////////////////////////////////////////////////
+// +| ActionsBooksUUID |+
+//////////////////////////////////////////////////////////////////////////////
+public static function ActionsBooksUUID  ( $argv , $Content , $Options     ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Databases = $Options                  [ "Databases"                     ] ;
+  $HOST      = $Databases                [ "ERP"                           ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX       = new DB                    (                                 ) ;
+  if                                     ( ! $DBX -> Connect ( $HOST )     ) {
+    return $DBX -> ConnectionError       (                                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLES    = $GLOBALS                  [ "ActionsTables"                 ] ;
+  $CRSTAB    = $TABLES                   [ "Courses"                       ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PREFER    = self::GetTag              ( "prefer" , $argv                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                     ( strlen ( $PREFER ) <= 0         ) {
+    return ""                                                                ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HTML      = ""                                                            ;
+  $QQ        = "select `uuid` from {$CRSTAB} where `prefer` = {$PREFER} ;"   ;
+  $HTML      = $DBX -> FetchOne          ( $QQ                             ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                         (                                 ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HTML                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ActionsBooksUUID |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ActionsBooksCover |+
+//////////////////////////////////////////////////////////////////////////////
+public static function ActionsBooksCover ( $argv , $Content , $Options     ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Databases = $Options                  [ "Databases"                     ] ;
+  $HOST      = $Databases                [ "ERP"                           ] ;
+  $AITK      = $Options                  [ "AITK"                          ] ;
+  $WIKI      = $Options                  [ "Configure" ] [ "wiki" ]          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLES    = $GLOBALS                  [ "ActionsTables"                 ] ;
+  $CRSTAB    = $TABLES                   [ "Courses"                       ] ;
+  $RELTAB    = $TABLES                   [ "PictureOwner"                  ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PREFER    = self::GetTag              ( "prefer" , $argv                ) ;
+  $UUID      = self::GetTag              ( "uuid"   , $argv                ) ;
+  $WIDTH     = self::GetTag              ( "width"  , $argv                ) ;
+  $HEIGHT    = self::GetTag              ( "height" , $argv                ) ;
+  $HTML = ""                                                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ( strlen ( $PREFER ) <= 0 ) and ( strlen ( $UUID ) <= 0 )           ) {
+    return "You need to assign 'prefer' or 'uuid' parameter for book cover icon." ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX       = new DB                    (                                 ) ;
+  if                                     ( ! $DBX -> Connect ( $HOST )     ) {
+    return $DBX -> ConnectionError       (                                 ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ( strlen ( $PREFER ) > 0 ) and ( strlen ( $UUID ) <= 0 )            ) {
+    $QQ     = "select `uuid` from {$CRSTAB} where `prefer` = {$PREFER} ;"    ;
+    $UUID   = $DBX -> FetchOne           ( $QQ                             ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                     ( strlen ( $UUID ) <= 0           ) {
+    $HTML = "You need to have a valid 'prefer' or 'uuid' parameter."         ;
+  } else                                                                     {
+    $PUID = ""                                                               ;
+    $RI   = new Relation                 (                                 ) ;
+    $RI  -> set                          ( "first" , $UUID                 ) ;
+    $RI  -> setT1                        ( "Course"                        ) ;
+    $RI  -> setT2                        ( "Picture"                       ) ;
+    $RI  -> setRelation                  ( "Using"                         ) ;
+    $UX   = $RI -> Subordination         ( $DBX , $RELTAB                  ) ;
+    if                                   ( count ( $UX ) > 0               ) {
+      $PUID = $UX [ 0 ]                                                      ;
+    }                                                                        ;
+    if                                   ( strlen ( $PUID ) <= 0           ) {
+      $HTML = "Assigned Uuid = '{$UUID}' does not have avatar icon."         ;
+    } else                                                                   {
+      $PICT = "{$WIKI}{$AITK}/ajax/image.php?ID={$PUID}&Database=ERP"        ;
+      $IMG  = new Html                   (                                 ) ;
+      $IMG -> setTag                     ( "img"                           ) ;
+      $IMG -> AddPair                    ( "src"    , $PICT                ) ;
+      $IMG -> SafePair                   ( "width"  , $WIDTH               ) ;
+      $IMG -> SafePair                   ( "height" , $HEIGHT              ) ;
+      $HTML = $IMG -> Content            (                                 ) ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HTML                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ActionsBooksCover |-
+//////////////////////////////////////////////////////////////////////////////
 // +| ActionsBooks |+
 //////////////////////////////////////////////////////////////////////////////
 public static function ActionsBooks   ( $argv , $Content , $Options        ) {
   ////////////////////////////////////////////////////////////////////////////
+  $ITEM       = self::GetTag          ( "item" , $argv                     ) ;
+  $ITEM       = strtolower            ( $ITEM                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                              ( $ITEM                              ) {
+    case "uuid"                                                              :
+    return self::ActionsBooksUUID     ( $argv , $Content , $Options        ) ;
+    case "cover"                                                             :
+    return self::ActionsBooksCover    ( $argv , $Content , $Options        ) ;
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   return ""                                                                  ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ActionsBooks |-
 //////////////////////////////////////////////////////////////////////////////
-// +| ActionsTheme |+
-//////////////////////////////////////////////////////////////////////////////
-public static function ActionsTheme   ( $argv , $Content , $Options        ) {
-  ////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
-}
-//////////////////////////////////////////////////////////////////////////////
-// -| ActionsTheme |-
-//////////////////////////////////////////////////////////////////////////////
-// +| ActionsFile |+
-//////////////////////////////////////////////////////////////////////////////
-public static function ActionsFile    ( $argv , $Content , $Options        ) {
-  ////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
-}
-//////////////////////////////////////////////////////////////////////////////
-// -| ActionsFile |-
-//////////////////////////////////////////////////////////////////////////////
-// +| ActionsDirectory |+
-//////////////////////////////////////////////////////////////////////////////
-public static function ActionsDirectory ( $argv , $Content , $Options      ) {
-  ////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
-}
-//////////////////////////////////////////////////////////////////////////////
-// -| ActionsDirectory |-
-//////////////////////////////////////////////////////////////////////////////
 // +| ActionsPicture |+
 //////////////////////////////////////////////////////////////////////////////
 public static function ActionsPicture   ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
+  $ID           = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
+  $DBV          = ""                                                         ;
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  } else                                                                     {
+    $DBV        = "&Database=ERP"                                            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PICT         = "{$WIKI}{$AITK}/ajax/image.php?ID={$ID}{$DBV}"             ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ActionsPicture |-
@@ -3141,8 +3461,70 @@ public static function ActionsPicture   ( $argv , $Content , $Options      ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function ActionsAvatar    ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
+  $ID           = self::GetTag          ( "id"       , $argv               ) ;
+  $UUID         = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
+  if                     ( strlen ( $ID ) > 0                              ) {
+    $UUID = str_replace  ( "act1" , "14000000000" , $ID                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBV          = ""                                                         ;
+  $WIDTH        = ""                                                         ;
+  $HEIGHT       = ""                                                         ;
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  } else                                                                     {
+    $DBV        = "&Database=ERP"                                            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      case "width"                                                           :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+          $WIDTH  = "&Width={$V}"                                            ;
+        }                                                                    ;
+      break                                                                  ;
+      case "height"                                                          :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+          $HEIGHT = "&Height={$V}"                                           ;
+        }                                                                    ;
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS       = "{$DBV}{$WIDTH}{$HEIGHT}"                                  ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/who.php?Uuid={$UUID}{$PARAMS}"        ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ActionsAvatar |-
@@ -3151,31 +3533,319 @@ public static function ActionsAvatar    ( $argv , $Content , $Options      ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function ActionsIcon      ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
+  $ID           = self::GetTag          ( "uuid"     , $argv               ) ;
+  $DBX          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
+  $DBV          = ""                                                         ;
+  $OWNER        = ""                                                         ;
+  $REL          = ""                                                         ;
+  $DEF          = ""                                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                    ( strlen ( $DBX ) > 0              ) {
+    $DBV        = "&Database={$DBX}"                                         ;
+  } else                                                                     {
+    $DBV        = "&Database=ERP"                                            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AITK         = $Options              [ "AITK"                           ] ;
+  $WIKI         = $Options              [ "Configure" ] [ "wiki" ]           ;
+  $IMG          = new Html              (                                  ) ;
+  $IMG         -> setTag                ( "img"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                               ( $KEYs as $K                      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S          = strtolower            ( $K                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                              ( $S                               ) {
+      case "function"                                                        :
+      case "database"                                                        :
+      case "uuid"                                                            :
+      break                                                                  ;
+      case "default"                                                         :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $DEF    = "&Default={$V}"                                            ;
+      break                                                                  ;
+      case "owner"                                                           :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $OWNER  = "&Owner={$V}"                                              ;
+      break                                                                  ;
+      case "relation"                                                        :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $REL    = "&Relation={$V}"                                           ;
+      break                                                                  ;
+      default                                                                :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        if                              ( strlen ( $V ) > 0                ) {
+          $IMG -> AddPair               ( $K , $V                          ) ;
+        } else                                                               {
+          $IMG -> AddMember             ( $K                               ) ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS       = "{$DBV}{$OWNER}{$REL}{$DEF}"                               ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/image.php?ID={$ID}{$PARAMS}"          ;
+  $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $IMG  -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ActionsIcon |-
 //////////////////////////////////////////////////////////////////////////////
+// +| ActionsTheme |+
+//////////////////////////////////////////////////////////////////////////////
+public static function ActionsTheme   ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Id          = self::GetTag        ( "id"        , $argv                 ) ;
+  $Filename    = self::GetTag        ( "filename"  , $argv                 ) ;
+  $Directory   = self::GetTag        ( "directory" , $argv                 ) ;
+  $THEME       = self::GetTag        ( "directory" , $argv                 ) ;
+  $Original    = $Filename                                                   ;
+  $Label       = $GLOBALS            [ "UpdateFile"                        ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Templates   = $Options            [ "Templates"                         ] ;
+  $DIRs        = $Options            [ "Directory"                         ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ! array_key_exists ( $Directory , $DIRs ) )                           {
+    $Directory = "THEMEDIR"                                                  ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DIRPATH     = $DIRs               [ $Directory                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( strlen ( $THEME ) > 0               ) {
+    $Directory = "WWWDIR"                                                    ;
+    $DIRPATH   = $DIRs               [ "WWWDIR"                            ] ;
+    $DIRPATH   = "{$DIRPATH}/themes/{$THEME}"                                ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $LOCALFILE   = "{$DIRPATH}/{$Filename}"                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( strlen ( $Content ) > 0             ) {
+    $Original  = $Content                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( strlen ( $Id ) <= 0                 ) {
+    $Id        = self::RandomString  ( "File-" , 24                        ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $EXTENSION   = $Options            [ "AITK"                              ] ;
+  $PATHX       = $Options            [ "Extension"                         ] ;
+  $TEMPLFILE   = $Templates          [ "File::Editor"                      ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $READONLY    = ""                                                          ;
+  $PARAMETERS  = array               (                                     ) ;
+  $KEYs        = array_keys          ( $argv                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                            ( $KEYs as $K                         ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S         = strtolower          ( $K                                  ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                           ( $S                                  ) {
+      case "function"                                                        :
+      case "id"                                                              :
+      case "filename"                                                        :
+      case "theme"                                                           :
+      case "directory"                                                       :
+      case "include"                                                         :
+      case "localfile"                                                       :
+      case "tableclass"                                                      :
+      case "buttonclass"                                                     :
+      case "onclick"                                                         :
+      break                                                                  ;
+      case "button"                                                          :
+      case "label"                                                           :
+        $Label = self::GetTag        ( $K , $argv                          ) ;
+      break                                                                  ;
+      case "editable"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ! in_array ( $RO , [ "yes" , "true" ] ) )                       {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
+      break                                                                  ;
+      case "readonly"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ( strlen ( $RO ) <= 0 )                                        ||
+             ( in_array ( $RO , [ "true" , "yes" ] ) )                     ) {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
+      default                                                                :
+        $V     = self::GetTag        ( $K , $argv                          ) ;
+        array_push                   ( $PARAMETERS , "{$K}='{$V}'"         ) ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARMS       = ""                                                          ;
+  if                                 ( count ( $PARAMETERS ) > 0           ) {
+    $PARMS     = implode             ( " " , $PARAMETERS                   ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MAPS        = array                                                       (
+    "$(EDITOR-ID)"           =>   $Id                                        ,
+    "$(BUTTON-LABEL)"        =>   $Label                                     ,
+    "$(EDITOR-LABEL)"        =>   $Original                                  ,
+    "$(EDITOR-PARAMETERS)"   =>   $PARMS                                     ,
+    "$(EDITOR-DIRECTORY)"    =>   $Directory                                 ,
+    "$(EDITOR-PATH)"         =>   $DIRPATH                                   ,
+    "$(EDITOR-FILENAME)"     =>   $Filename                                  ,
+    "$(EDITOR-LOCALFILE)"    =>   $LOCALFILE                                 ,
+    "$(EDITOR-READONLY)"     =>   $READONLY                                  ,
+  )                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return Strings::ReplaceFileByKeys  ( $TEMPLFILE , $MAPS                  ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ActionsTheme |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ActionsFile |+
+//////////////////////////////////////////////////////////////////////////////
+public static function ActionsFile    ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $Id          = self::GetTag        ( "id"        , $argv                 ) ;
+  $Filename    = self::GetTag        ( "filename"  , $argv                 ) ;
+  $Directory   = self::GetTag        ( "directory" , $argv                 ) ;
+  $Original    = $Filename                                                   ;
+  $Label       = $GLOBALS            [ "UpdateFile"                        ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Templates   = $Options            [ "Templates"                         ] ;
+  $DIRs        = $Options            [ "Directory"                         ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ! array_key_exists ( $Directory , $DIRs ) )                           {
+    $Directory = "WWWDIR"                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DIRPATH     = $DIRs               [ $Directory                          ] ;
+  $LOCALFILE   = "{$DIRPATH}/{$Filename}"                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( strlen ( $Content ) > 0             ) {
+    $Original  = $Content                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( strlen ( $Id ) <= 0                 ) {
+    $Id        = self::RandomString  ( "File-" , 24                        ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $EXTENSION   = $Options            [ "AITK"                              ] ;
+  $PATHX       = $Options            [ "Extension"                         ] ;
+  $TEMPLFILE   = $Templates          [ "File::Editor"                      ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $READONLY    = ""                                                          ;
+  $PARAMETERS  = array               (                                     ) ;
+  $KEYs        = array_keys          ( $argv                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                            ( $KEYs as $K                         ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S         = strtolower          ( $K                                  ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                           ( $S                                  ) {
+      case "function"                                                        :
+      case "id"                                                              :
+      case "filename"                                                        :
+      case "directory"                                                       :
+      case "include"                                                         :
+      case "localfile"                                                       :
+      case "tableclass"                                                      :
+      case "buttonclass"                                                     :
+      case "onclick"                                                         :
+      break                                                                  ;
+      case "button"                                                          :
+      case "label"                                                           :
+        $Label = self::GetTag        ( $K , $argv                          ) ;
+      break                                                                  ;
+      case "editable"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ! in_array ( $RO , [ "yes" , "true" ] ) )                       {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
+      break                                                                  ;
+      case "readonly"                                                        :
+        $RO    = self::GetTag        ( $K , $argv                          ) ;
+        $RO    = strtolower          ( $RO                                 ) ;
+        if ( ( strlen ( $RO ) <= 0 )                                        ||
+             ( in_array ( $RO , [ "true" , "yes" ] ) )                     ) {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
+      default                                                                :
+        $V     = self::GetTag        ( $K , $argv                          ) ;
+        array_push                   ( $PARAMETERS , "{$K}='{$V}'"         ) ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARMS       = ""                                                          ;
+  if                                 ( count ( $PARAMETERS ) > 0           ) {
+    $PARMS     = implode             ( " " , $PARAMETERS                   ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MAPS        = array                                                       (
+    "$(EDITOR-ID)"           =>   $Id                                        ,
+    "$(BUTTON-LABEL)"        =>   $Label                                     ,
+    "$(EDITOR-LABEL)"        =>   $Original                                  ,
+    "$(EDITOR-PARAMETERS)"   =>   $PARMS                                     ,
+    "$(EDITOR-DIRECTORY)"    =>   $Directory                                 ,
+    "$(EDITOR-PATH)"         =>   $DIRPATH                                   ,
+    "$(EDITOR-FILENAME)"     =>   $Filename                                  ,
+    "$(EDITOR-LOCALFILE)"    =>   $LOCALFILE                                 ,
+    "$(EDITOR-READONLY)"     =>   $READONLY                                  ,
+  )                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return Strings::ReplaceFileByKeys  ( $TEMPLFILE , $MAPS                  ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ActionsFile |-
+//////////////////////////////////////////////////////////////////////////////
 // +| ActionsSettings |+
 //////////////////////////////////////////////////////////////////////////////
-public static function ActionsSettings      ( $argv , $Content , $Options      ) {
+public static function ActionsSettings  ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
+  $ARGX        = $argv                                                       ;
+  $Method      = self::GetTag        ( "method"    , $argv                 ) ;
+  $Method      = strtolower          ( $Method                             ) ;
+  $PICKDB      = self::GetTag        ( "database"  , $argv                 ) ;
+  $PICKDB      = strtolower          ( $PICKDB                             ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLE       = $GLOBALS [ "ActionsTables" ] [ "Settings"    ]              ;
+  if                                 ( $PICKDB == "www"                    ) {
+    $TABLE     = $GLOBALS [ "ActionsTables" ] [ "WwwSettings" ]              ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ARGX [ "database" ] = "ERP"                                               ;
+  $ARGX [ "table"    ] = $TABLE                                              ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                             ( $Method                             ) {
+    //////////////////////////////////////////////////////////////////////////
+    case "editor"                                                            :
+    return self::SettingsEditor      ( $ARGX , $Content , $Options         ) ;
+    //////////////////////////////////////////////////////////////////////////
+    case "checkbox"                                                          :
+    return self::SettingsCheckBox    ( $ARGX , $Content , $Options         ) ;
+    //////////////////////////////////////////////////////////////////////////
+    case "number"                                                            :
+    return self::SettingsNumber      ( $ARGX , $Content , $Options         ) ;
+    //////////////////////////////////////////////////////////////////////////
+    case "text"                                                              :
+    return self::SettingsText        ( $ARGX , $Content , $Options         ) ;
+    //////////////////////////////////////////////////////////////////////////
+    case "stardate"                                                          :
+    return self::SettingsStarDate    ( $ARGX , $Content , $Options         ) ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   return ""                                                                  ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| ActionsSettings |-
-//////////////////////////////////////////////////////////////////////////////
-// +| ActionsYouTube |+
-//////////////////////////////////////////////////////////////////////////////
-public static function ActionsYouTube       ( $argv , $Content , $Options  ) {
-  ////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  return ""                                                                  ;
-}
-//////////////////////////////////////////////////////////////////////////////
-// -| ActionsYouTube |-
 //////////////////////////////////////////////////////////////////////////////
 // +| EarthVelocity |+
 // 地球速度
