@@ -1538,6 +1538,8 @@ public static function IconUI           ( $argv , $Content , $Options      ) {
   $OWNER        = ""                                                         ;
   $REL          = ""                                                         ;
   $DEF          = ""                                                         ;
+  $SIZ          = ""                                                         ;
+  $IPHP         = "image.php"                                                ;
   ////////////////////////////////////////////////////////////////////////////
   if                                    ( strlen ( $DBX ) > 0              ) {
     $DBV        = "&Database={$DBX}"                                         ;
@@ -1559,9 +1561,16 @@ public static function IconUI           ( $argv , $Content , $Options      ) {
       case "database"                                                        :
       case "uuid"                                                            :
       break                                                                  ;
+      case "php"                                                             :
+        $IPHP   = self::GetTag          ( $K , $argv                       ) ;
+      break                                                                  ;
       case "default"                                                         :
         $V      = self::GetTag          ( $K , $argv                       ) ;
         $DEF    = "&Default={$V}"                                            ;
+      break                                                                  ;
+      case "size"                                                            :
+        $V      = self::GetTag          ( $K , $argv                       ) ;
+        $SIZ    = "&Size={$V}"                                               ;
       break                                                                  ;
       case "owner"                                                           :
         $V      = self::GetTag          ( $K , $argv                       ) ;
@@ -1583,8 +1592,8 @@ public static function IconUI           ( $argv , $Content , $Options      ) {
     //////////////////////////////////////////////////////////////////////////
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $PARAMS       = "{$DBV}{$OWNER}{$REL}{$DEF}"                               ;
-  $PICT         = "{$WIKI}{$AITK}/ajax/image.php?ID={$ID}{$PARAMS}"          ;
+  $PARAMS       = "{$DBV}{$SIZ}{$OWNER}{$REL}{$DEF}"                         ;
+  $PICT         = "{$WIKI}{$AITK}/ajax/{$IPHP}?ID={$ID}{$PARAMS}"            ;
   $IMG         -> AddPair               ( "src"   , $PICT                  ) ;
   ////////////////////////////////////////////////////////////////////////////
   return $IMG  -> Content               (                                  ) ;
