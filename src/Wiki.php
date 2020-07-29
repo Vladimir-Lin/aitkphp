@@ -1483,24 +1483,25 @@ public static function ListDirectory  ( $argv , $Content , $Options        ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function GalleryUI        ( $argv , $Content , $Options      ) {
   ////////////////////////////////////////////////////////////////////////////
-  $HOST        = self::GetCurrentDB  ( $argv , $Options                    ) ;
+  $HOST        = self::GetCurrentDB     ( $argv , $Options                 ) ;
   ////////////////////////////////////////////////////////////////////////////
-  $DBX         = new DB              (                                     ) ;
-  if                                 ( ! $DBX -> Connect ( $HOST )         ) {
-    return $DBX -> ConnectionError   (                                     ) ;
+  $DBX         = new DB                 (                                  ) ;
+  if                                    ( ! $DBX -> Connect ( $HOST )      ) {
+    return $DBX -> ConnectionError      (                                  ) ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $DBX          = self::GetTag          ( "database" , $argv               ) ;
+  $DBZ          = self::GetTag          ( "database" , $argv               ) ;
   ////////////////////////////////////////////////////////////////////////////
   $DBV          = ""                                                         ;
-  if                                    ( strlen ( $DBX ) > 0              ) {
-    $DBV        = "&Database={$DBX}"                                         ;
+  if                                    ( strlen ( $DBZ ) > 0              ) {
+    $DBV        = "&Database={$DBZ}"                                         ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   $ID           = self::RandomString    ( "Gallery-" , 40                  ) ;
   ////////////////////////////////////////////////////////////////////////////
   $HT           = new Html              (                                  ) ;
   ////////////////////////////////////////////////////////////////////////////
+  $KEYs         = array_keys            ( $argv                            ) ;
   foreach                               ( $KEYs as $K                      ) {
     //////////////////////////////////////////////////////////////////////////
     $S          = strtolower            ( $K                               ) ;
@@ -1524,7 +1525,7 @@ public static function GalleryUI        ( $argv , $Content , $Options      ) {
     //////////////////////////////////////////////////////////////////////////
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $HT          -> AddPair               ( "id" , $ID                       ) ;
+  $HT          -> setDiv                ( "" , $ID , ""                    ) ;
   ////////////////////////////////////////////////////////////////////////////
   $UUIDs        = array                 (                                  ) ;
   $qq           = $DBX    -> Query      ( $Content                         ) ;
@@ -1547,23 +1548,21 @@ public static function GalleryUI        ( $argv , $Content , $Options      ) {
     $PICT       = "{$WIKI}{$AITK}/ajax/image.php?ID={$UUID}{$DBV}"           ;
     $THUT       = "{$WIKI}{$AITK}/ajax/icon.php?ID={$UUID}{$DBV}"            ;
     //////////////////////////////////////////////////////////////////////////
-    $HREF       = $HT  -> addHtml       ( "a"                              ) ;
+    $HREF       = $HT   -> addHtml      ( "a"                              ) ;
     $HREF      -> AddPair               ( "href" , $PICT                   ) ;
     $IMG        = $HREF -> addHtml      ( "img"                            ) ;
     $IMG       -> AddPair               ( "src"  , $THUT                   ) ;
     //////////////////////////////////////////////////////////////////////////
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $LGSRC        = "$('#{$ID}').lightGallery({thumbnail:true,animateThumb:false,showThumbByDefault:false}) ;" ;
+  $LGSRC        = "$('#{$ID}').lightGallery({thumbnail:true,animateThumb:false,showThumbByDefault:false});" ;
   $SRC          = $HT -> addHtml        ( "script"                         ) ;
   $SRC         -> AddPair               ( "type" , "text/javascript"       ) ;
   $SRC         -> AddText               ( $LGSRC                           ) ;
   ////////////////////////////////////////////////////////////////////////////
-  $MSG   = $HT -> Content            (                                     ) ;
+  $DBX         -> Close                 (                                  ) ;
   ////////////////////////////////////////////////////////////////////////////
-  $DBX  -> Close                     (                                     ) ;
-  ////////////////////////////////////////////////////////////////////////////
-  return $MSG                                                                ;
+  return $HT   -> Content               (                                  ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| GalleryUI |-
