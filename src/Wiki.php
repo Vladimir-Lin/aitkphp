@@ -391,12 +391,13 @@ public static function IncludeModule ( $argv , $Content , $Options         ) {
     return ""                                                                ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
+  $WIKI      = $Options [ "Configure" ] [ "wiki" ]                           ;
   $EXTENSION = $Options [ "AITK"      ]                                      ;
   $PATHX     = $Options [ "Extension" ]                                      ;
   $FILENAME  = $PATHs   [ $Module     ]                                      ;
   $FILENAME  = "{$PATHX}/{$FILENAME}"                                        ;
   ////////////////////////////////////////////////////////////////////////////
-  $MAPS [ "$(EXTENSION-PATH)"   ] = $EXTENSION                               ;
+  $MAPS [ "$(EXTENSION-PATH)"   ] = "{$WIKI}{$EXTENSION}"                    ;
   $MAPS [ "$(EXTENSION-LOCALE)" ] = $LOCALE                                  ;
   ////////////////////////////////////////////////////////////////////////////
   return Strings::ReplaceFileByKeys  ( $FILENAME , $MAPS                   ) ;
