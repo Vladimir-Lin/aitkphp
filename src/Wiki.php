@@ -391,11 +391,17 @@ public static function IncludeModule ( $argv , $Content , $Options         ) {
     return ""                                                                ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
+  $WITHPREF  = $Options [ "Configure" ] [ "WithPrefix" ]                     ;
   $WIKI      = $Options [ "Configure" ] [ "wiki" ]                           ;
   $EXTENSION = $Options [ "AITK"      ]                                      ;
   $PATHX     = $Options [ "Extension" ]                                      ;
   $FILENAME  = $PATHs   [ $Module     ]                                      ;
   $FILENAME  = "{$PATHX}/{$FILENAME}"                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  $EXT       = $EXTENSION                                                    ;
+  if ( $WITHPREF )                                                           {
+    $EXT     = "{$WIKI}{$EXTENSION}"                                         ;
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   $MAPS [ "$(EXTENSION-PATH)"   ] = "{$WIKI}{$EXTENSION}"                    ;
   $MAPS [ "$(EXTENSION-LOCALE)" ] = $LOCALE                                  ;
