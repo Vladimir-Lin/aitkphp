@@ -403,7 +403,7 @@ public static function IncludeModule ( $argv , $Content , $Options         ) {
     $EXT     = "{$WIKI}{$EXTENSION}"                                         ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $MAPS [ "$(EXTENSION-PATH)"   ] = "{$WIKI}{$EXTENSION}"                    ;
+  $MAPS [ "$(EXTENSION-PATH)"   ] = $EXT                                     ;
   $MAPS [ "$(EXTENSION-LOCALE)" ] = $LOCALE                                  ;
   ////////////////////////////////////////////////////////////////////////////
   return Strings::ReplaceFileByKeys  ( $FILENAME , $MAPS                   ) ;
