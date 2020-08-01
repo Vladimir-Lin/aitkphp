@@ -15,6 +15,7 @@ public $Flags                                                                ;
 public $Utf8                                                                 ;
 public $Length                                                               ;
 public $Name                                                                 ;
+public $isUTF8                                                               ;
 //////////////////////////////////////////////////////////////////////////////
 public $Usages    = array                                                    (
   "Default"       =>   0                                                     ,
@@ -48,6 +49,7 @@ public function clear ( )                                                    {
   $this -> Utf8      = 0                                                     ;
   $this -> Length    = 0                                                     ;
   $this -> Name      = ""                                                    ;
+  $this -> isUTF8    = true                                                  ;
 }
 //////////////////////////////////////////////////////////////////////////////
 public function assign ( $Item )                                             {
@@ -62,17 +64,19 @@ public function assign ( $Item )                                             {
   $this -> Name      = $Item -> Name                                         ;
 }
 //////////////////////////////////////////////////////////////////////////////
-public function tableItems ( )                                               {
-  $S = array (                  )                                            ;
-  array_push ( $S , "id"        )                                            ;
-  array_push ( $S , "uuid"      )                                            ;
-  array_push ( $S , "locality"  )                                            ;
-  array_push ( $S , "priority"  )                                            ;
-  array_push ( $S , "relevance" )                                            ;
-  array_push ( $S , "flags"     )                                            ;
-  array_push ( $S , "utf8"      )                                            ;
-  array_push ( $S , "length"    )                                            ;
-  array_push ( $S , "name"      )                                            ;
+public function tableItems (                  )                              {
+  $S = array               (                  )                              ;
+  array_push               ( $S , "id"        )                              ;
+  array_push               ( $S , "uuid"      )                              ;
+  array_push               ( $S , "locality"  )                              ;
+  array_push               ( $S , "priority"  )                              ;
+  array_push               ( $S , "relevance" )                              ;
+  array_push               ( $S , "flags"     )                              ;
+  if                       ( $this -> isUTF8  )                              {
+    array_push             ( $S , "utf8"      )                              ;
+  }                                                                          ;
+  array_push               ( $S , "length"    )                              ;
+  array_push               ( $S , "name"      )                              ;
   return $S                                                                  ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -241,14 +245,35 @@ public function FetchUuids ( $DB , $Table , $UUIDs )                         {
 }
 //////////////////////////////////////////////////////////////////////////////
 public function Insert ( $Table )                                            {
+  ////////////////////////////////////////////////////////////////////////////
   $ULEN = mb_strlen ( $this -> Name )                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( $this -> isUTF8 )                                                     {
+    return "insert into " . $Table                                           .
+              " (`uuid`,"                                                    .
+            "`locality`,"                                                    .
+            "`priority`,"                                                    .
+           "`relevance`,"                                                    .
+               "`flags`,"                                                    .
+                "`utf8`,"                                                    .
+                "`name`,"                                                    .
+              "`length`)"                                                    .
+              " values ("                                                    .
+              (string) $this -> Uuid      . ","                              .
+              (string) $this -> Locality  . ","                              .
+              (string) $this -> Priority  . ","                              .
+              (string) $this -> Relevance . ","                              .
+              (string) $this -> Flags     . ","                              .
+              (string) $ULEN              . ","                              .
+              "?,length(`name`)) ;"                                          ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   return "insert into " . $Table                                             .
             " (`uuid`,"                                                      .
           "`locality`,"                                                      .
           "`priority`,"                                                      .
          "`relevance`,"                                                      .
              "`flags`,"                                                      .
-              "`utf8`,"                                                      .
               "`name`,"                                                      .
             "`length`)"                                                      .
             " values ("                                                      .
@@ -257,7 +282,6 @@ public function Insert ( $Table )                                            {
             (string) $this -> Priority  . ","                                .
             (string) $this -> Relevance . ","                                .
             (string) $this -> Flags     . ","                                .
-            (string) $ULEN              . ","                                .
             "?,length(`name`)) ;"                                            ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -277,17 +301,42 @@ public function DeleteId ( $Table )                                          {
 public function Update ( $Table )                                            {
   $L  = array (                                                     )        ;
   array_push  ( $L , "uuid" , "locality" , "priority" , "relevance" )        ;
-  $QQ = "update " . $Table                                                   .
-        " set `name` = ? ,"                                                  .
-        " `flags` = " . $this -> Flags . " ,"                                .
-        " `length` = length(name)"                                           .
-        $this -> QueryItems ( $L )                                    . " ;" ;
+  if ( $this -> isUTF8 )                                                     {
+    $ULEN = mb_strlen ( $this -> Name )                                      ;
+    $QQ = "update " . $Table                                                 .
+          " set `name` = ? ,"                                                .
+          " `flags` = " . $this -> Flags . " ,"                              .
+          " `utf8` = " . $ULEN . " ,"                                        .
+          " `length` = length(name)"                                         .
+          $this -> QueryItems ( $L )                                  . " ;" ;
+  } else                                                                     {
+    $QQ = "update " . $Table                                                 .
+          " set `name` = ? ,"                                                .
+          " `flags` = " . $this -> Flags . " ,"                              .
+          " `length` = length(name)"                                         .
+          $this -> QueryItems ( $L )                                  . " ;" ;
+  }                                                                          ;
   unset ( $L )                                                               ;
   return $QQ                                                                 ;
 }
 //////////////////////////////////////////////////////////////////////////////
-public function UpdateId ( $Table )                                          {
+public function UpdateId ( $Table                                          ) {
+  ////////////////////////////////////////////////////////////////////////////
   $ULEN = mb_strlen ( $this -> Name )                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                     ( $this -> isUTF8                                 ) {
+    return "update " . $Table                                                .
+           " set `name` = ? ,"                                               .
+               " `uuid` = " . $this -> Uuid      . " ,"                      .
+           " `locality` = " . $this -> Locality  . " ,"                      .
+           " `priority` = " . $this -> Priority  . " ,"                      .
+          " `relevance` = " . $this -> Relevance . " ,"                      .
+              " `flags` = " . $this -> Flags     . " ,"                      .
+               " `utf8` = " . $ULEN              . " ,"                      .
+             " `length` = length(`name`)"                                    .
+           " where `id` = " . $this -> Id . " ;"                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   return "update " . $Table                                                  .
          " set `name` = ? ,"                                                 .
              " `uuid` = " . $this -> Uuid      . " ,"                        .
@@ -295,21 +344,24 @@ public function UpdateId ( $Table )                                          {
          " `priority` = " . $this -> Priority  . " ,"                        .
         " `relevance` = " . $this -> Relevance . " ,"                        .
             " `flags` = " . $this -> Flags     . " ,"                        .
-             " `utf8` = " . $ULEN              . " ,"                        .
            " `length` = length(`name`)"                                      .
          " where `id` = " . $this -> Id . " ;"                               ;
 }
 //////////////////////////////////////////////////////////////////////////////
 public function obtain ( $R )                                                {
-  $this -> Id        = $R [ "id"        ]                                    ;
-  $this -> Uuid      = $R [ "uuid"      ]                                    ;
-  $this -> Locality  = $R [ "locality"  ]                                    ;
-  $this -> Priority  = $R [ "priority"  ]                                    ;
-  $this -> Relevance = $R [ "relevance" ]                                    ;
-  $this -> Utf8      = $R [ "utf8"      ]                                    ;
-  $this -> Flags     = $R [ "flags"     ]                                    ;
-  $this -> Length    = $R [ "length"    ]                                    ;
-  $this -> Name      = $R [ "name"      ]                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this   -> Id        = $R [ "id"        ]                                  ;
+  $this   -> Uuid      = $R [ "uuid"      ]                                  ;
+  $this   -> Locality  = $R [ "locality"  ]                                  ;
+  $this   -> Priority  = $R [ "priority"  ]                                  ;
+  $this   -> Relevance = $R [ "relevance" ]                                  ;
+  if ( $this -> isUTF8 )                                                     {
+    $this -> Utf8      = $R [ "utf8"      ]                                  ;
+  }                                                                          ;
+  $this   -> Flags     = $R [ "flags"     ]                                  ;
+  $this   -> Length    = $R [ "length"    ]                                  ;
+  $this   -> Name      = $R [ "name"      ]                                  ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 public function bindName ( $DbQuery )                                        {

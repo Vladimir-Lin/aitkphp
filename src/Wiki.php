@@ -3020,6 +3020,7 @@ public static function AitkNameColumnChanged ( $DB                           ,
   $MSG         = ""                                                          ;
   $RELOAD      = false                                                       ;
   $NAMX        = new Name              (                                   ) ;
+  $NAMX       -> isUTF8 = $Options [ "Configure" ] [ "isUTF8" ]              ;
   $APPEND      = $HH -> Parameter      ( "Append"                          ) ;
   ////////////////////////////////////////////////////////////////////////////
   $TABLE       = $HH -> Parameter      ( "Table"                           ) ;
@@ -3246,6 +3247,7 @@ public static function AitkNameItemChanged ( $DB                             ,
   $NAME        = $HH -> Parameter          ( "Name"                        ) ;
   ////////////////////////////////////////////////////////////////////////////
   $NAMX        = new Name                  (                               ) ;
+  $NAMX       -> isUTF8 = $Options [ "Configure" ] [ "isUTF8" ]              ;
   $NAMX       -> Id        = -1                                              ;
   $NAMX       -> Uuid      = $UUID                                           ;
   $NAMX       -> Locality  = $LOCALITY                                       ;
