@@ -2797,18 +2797,22 @@ public static function CreateUuidNames ( $DB                                 ,
   ////////////////////////////////////////////////////////////////////////////
   // 抓取名稱關聯性
   ////////////////////////////////////////////////////////////////////////////
-  $QQ            = "select `id`,`name` from `relevance`"                     .
-                   " where ( `used` = 1 )"                                   .
-                   " order by `id` asc ;"                                    ;
+  $QQ            = "select `relevance`.`id`,`names`.`name` from `relevance`,`names`" .
+                   " where ( `relevance`.`used` = 1 )"                       .
+                   " and ( `names`.`uuid` = `relevance`.`uuid` ) "           .
+                   " and ( `names`.`locality` = {$LANG} ) "                  .
+                   " and ( `names`.`relevance` = 0 ) "                       .
+                   " and ( `names`.`priority` = 0 ) "                        .
+                   " order by `relevance`.`id` asc ;"                        ;
   $qq            = $DB -> Query        ( $QQ                               ) ;
   ////////////////////////////////////////////////////////////////////////////
   if                                   ( $DB -> hasResult ( $qq )          ) {
     //////////////////////////////////////////////////////////////////////////
     while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH ) )                       {
       ////////////////////////////////////////////////////////////////////////
-      $ID        = $rr [ 0 ]                                                 ;
+      $ZID       = $rr [ 0 ]                                                 ;
       $NAME      = $rr [ 1 ]                                                 ;
-      $RELVs [ $ID ] = $NAME                                                 ;
+      $RELVs [ $ZID ] = $NAME                                                ;
       ////////////////////////////////////////////////////////////////////////
     }                                                                        ;
   }                                                                          ;
@@ -2869,10 +2873,12 @@ public static function CreateUuidNames ( $DB                                 ,
       ////////////////////////////////////////////////////////////////////////
       $TDX       = $TRX -> addTd       (                                   ) ;
       $TDX      -> AddPair             ( "width" , "1%"                    ) ;
+      $TDX      -> AddPair             ( "class" , "NameColumnCell"        ) ;
       if                               ( $EDIT                             ) {
         //////////////////////////////////////////////////////////////////////
         $JSC     = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','{$XID}','{$UUID}',{$LANG},'{$LOCALITY}','language',this.value,false);" ;
         $SEL     = $TDX -> addSelect   (                                   ) ;
+        $SEL    -> AddPair             ( "class"    , "NameColumnLocality" ) ;
         $SEL    -> addOptions          ( $LANGs     , $LID                 ) ;
         $SEL    -> AddPair             ( "onchange" , $JSC                 ) ;
         //////////////////////////////////////////////////////////////////////
@@ -2884,11 +2890,13 @@ public static function CreateUuidNames ( $DB                                 ,
       ////////////////////////////////////////////////////////////////////////
       $TDX       = $TRX -> addTd       (                                   ) ;
       $TDX      -> AddPair             ( "width" , "1%"                    ) ;
+      $TDX      -> AddPair             ( "class" , "NameColumnCell"        ) ;
       if                               ( $EDIT                             ) {
         //////////////////////////////////////////////////////////////////////
         $JSC     = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','{$XID}','{$UUID}',{$LANG},'{$LOCALITY}','relevance',this.value,false);" ;
         $SEL     = $TDX -> addSelect   (                                   ) ;
         $SEL    -> addOptions          ( $RELVs     , $REVID               ) ;
+        $SEL    -> AddPair             ( "class" , "NameColumnRelevance"   ) ;
         $SEL    -> AddPair             ( "onchange" , $JSC                 ) ;
         //////////////////////////////////////////////////////////////////////
       } else                                                                 {
@@ -2899,10 +2907,12 @@ public static function CreateUuidNames ( $DB                                 ,
       ////////////////////////////////////////////////////////////////////////
       $TDX       = $TRX -> addTd       (                                   ) ;
       $TDX      -> AddPair             ( "width" , "1%"                    ) ;
+      $TDX      -> AddPair             ( "class" , "NameColumnCell"        ) ;
       if                               ( $EDIT                             ) {
         //////////////////////////////////////////////////////////////////////
         $JSC     = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','{$XID}','{$UUID}',{$LANG},'{$LOCALITY}','priority',this.value,false);" ;
         $INP     = $TDX -> addInput    (                                   ) ;
+        $INP    -> AddPair             ( "class"    , "NameColumnPriority" ) ;
         $INP    -> AddPair             ( "type"     , "number"             ) ;
         $INP    -> AddPair             ( "value"    , $PRIORITY            ) ;
         $INP    -> AddPair             ( "onchange" , $JSC                 ) ;
@@ -2915,12 +2925,15 @@ public static function CreateUuidNames ( $DB                                 ,
       ////////////////////////////////////////////////////////////////////////
       $TDX       = $TRX -> addTd       (                                   ) ;
       $TDX      -> AddPair             ( "width" , "1%"                    ) ;
+      $TDX      -> AddPair             ( "class" , "NameColumnCell"        ) ;
       if                               ( $EDIT                             ) {
         //////////////////////////////////////////////////////////////////////
+        $HEXC    = strtoupper          ( dechex ( $FLAGS )                 ) ;
         $JSC     = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','{$XID}','{$UUID}',{$LANG},'{$LOCALITY}','flags',this.value,false);" ;
         $INP     = $TDX -> addInput    (                                   ) ;
+        $INP    -> AddPair             ( "class"    , "NameColumnFlags"    ) ;
         $INP    -> AddPair             ( "type"     , "text"               ) ;
-        $INP    -> AddPair             ( "value"    , $FLAGS               ) ;
+        $INP    -> AddPair             ( "value"    , $HEXC                ) ;
         $INP    -> AddPair             ( "onchange" , $JSC                 ) ;
         //////////////////////////////////////////////////////////////////////
       } else                                                                 {
@@ -2934,6 +2947,7 @@ public static function CreateUuidNames ( $DB                                 ,
         //////////////////////////////////////////////////////////////////////
         $JSC     = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','{$XID}','{$UUID}',{$LANG},'{$LOCALITY}','name',this.value,false);" ;
         $INP     = $TDX -> addInput    (                                   ) ;
+        $INP    -> AddPair             ( "class" , "NameColumnAppellation" ) ;
         $INP    -> AddPair             ( "type"     , "text"               ) ;
         $INP    -> AddPair             ( "value"    , $NAME                ) ;
         $INP    -> AddPair             ( "onchange" , $JSC                 ) ;
@@ -2955,26 +2969,33 @@ public static function CreateUuidNames ( $DB                                 ,
     $KID         = "Name-Item-Language-{$UUID}"                              ;
     $TDX         = $TRX -> addTd       (                                   ) ;
     $TDX        -> AddPair             ( "width" , "1%"                    ) ;
+    $TDX        -> AddPair             ( "class" , "NameColumnCell"        ) ;
     $SEL         = $TDX -> addSelect   (                                   ) ;
+    $SEL        -> AddPair             ( "class"    , "NameColumnLocality" ) ;
     $SEL        -> AddPair             ( "id"    , $KID                    ) ;
     $SEL        -> addOptions          ( $LANGs  , $LANG                   ) ;
     //////////////////////////////////////////////////////////////////////////
     $KID         = "Name-Item-Relevance-{$UUID}"                             ;
     $TDX         = $TRX -> addTd       (                                   ) ;
     $TDX        -> AddPair             ( "width" , "1%"                    ) ;
+    $TDX        -> AddPair             ( "class" , "NameColumnCell"        ) ;
     $SEL         = $TDX -> addSelect   (                                   ) ;
+    $SEL        -> AddPair             ( "class" , "NameColumnRelevance"   ) ;
     $SEL        -> AddPair             ( "id"    , $KID                    ) ;
     $SEL        -> addOptions          ( $RELVs                            ) ;
     //////////////////////////////////////////////////////////////////////////
     $TDX         = $TRX -> addTd       (                                   ) ;
     $TDX        -> AddPair             ( "width" , "1%"                    ) ;
+    $TDX        -> AddPair             ( "class" , "NameColumnCell"        ) ;
     //////////////////////////////////////////////////////////////////////////
     $TDX         = $TRX -> addTd       (                                   ) ;
     $TDX        -> AddPair             ( "width" , "1%"                    ) ;
+    $TDX        -> AddPair             ( "class" , "NameColumnCell"        ) ;
     //////////////////////////////////////////////////////////////////////////
     $JSC         = "AitkNameColumnChanged('{$PICKDB}','{$TABLE}','{$ID}','-1','{$UUID}',{$LANG},'{$LOCALITY}','name',this.value,true);" ;
     $TDX         = $TRX -> addTd       (                                   ) ;
     $INP         = $TDX -> addInput    (                                   ) ;
+    $INP        -> AddPair             ( "class" , "NameColumnAppellation" ) ;
     $INP        -> AddPair             ( "type"     , "text"               ) ;
     $INP        -> AddPair             ( "value"    , ""                   ) ;
     $INP        -> AddPair             ( "placeholder" , "append name..."  ) ;
@@ -2996,21 +3017,114 @@ public static function AitkNameColumnChanged ( $DB                           ,
                                                $AA                           ,
                                                $Options                    ) {
   ////////////////////////////////////////////////////////////////////////////
-  $ID       = $HH -> Parameter ( "ID"                                      ) ;
-  $HTPASSWD = $HH -> Parameter ( "Root"                                    ) ;
-  $LANG     = $HH -> Parameter ( "Language"                                ) ;
-  $FILE     = $HH -> Parameter ( "File"                                    ) ;
-  $WIDTH    = $HH -> Parameter ( "Width"                                   ) ;
-  $APPEND   = $HH -> Parameter ( "Append"                                  ) ;
-  $DELETE   = $HH -> Parameter ( "Delete"                                  ) ;
-  $ACCOUNT  = $HH -> Parameter ( "Account"                                 ) ;
-  $PASSWD   = $HH -> Parameter ( "Password"                                ) ;
-  $AGAIN    = $HH -> Parameter ( "Again"                                   ) ;
+  $MSG         = ""                                                          ;
+  $RELOAD      = false                                                       ;
+  $NAMX        = new Name              (                                   ) ;
+  $APPEND      = $HH -> Parameter      ( "Append"                          ) ;
   ////////////////////////////////////////////////////////////////////////////
-
+  $TABLE       = $HH -> Parameter      ( "Table"                           ) ;
+  $ID          = $HH -> Parameter      ( "Id"                              ) ;
+  $UUID        = $HH -> Parameter      ( "Uuid"                            ) ;
+  $LANGUAGE    = $HH -> Parameter      ( "Language"                        ) ;
+  $LOCALITY    = $HH -> Parameter      ( "Locality"                        ) ;
   ////////////////////////////////////////////////////////////////////////////
-//  $AA [ "Message" ] = $HT                                                    ;
-  $AA [ "Message" ] = ""                                                     ;
+  if                                   ( $APPEND > 0                       ) {
+    //////////////////////////////////////////////////////////////////////////
+    $LANG      = $HH -> Parameter      ( "Lang"                            ) ;
+    $RELV      = $HH -> Parameter      ( "Relevance"                       ) ;
+    $NAME      = $HH -> Parameter      ( "Name"                            ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $NAMX     -> Id        = -1                                              ;
+    $NAMX     -> Uuid      = $UUID                                           ;
+    $NAMX     -> Locality  = $LANG                                           ;
+    $NAMX     -> Priority  = -1                                              ;
+    $NAMX     -> Relevance = $RELV                                           ;
+    $NAMX     -> Flags     = 0                                               ;
+    $NAMX     -> Name      = $NAME                                           ;
+    $DB       -> LockWrites            ( [ $TABLE ]                        ) ;
+    $NAMX     -> Editing               ( $DB , $TABLE                      ) ;
+    $DB       -> UnlockTables          (                                   ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $RELOAD    = true                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  } else                                                                     {
+    //////////////////////////////////////////////////////////////////////////
+    $ORDER     = $HH -> Parameter      ( "Order"                           ) ;
+    $COLUMN    = $HH -> Parameter      ( "Column"                          ) ;
+    $VALUE     = $HH -> Parameter      ( "Value"                           ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $NAMX     -> Id  = $ORDER                                                ;
+    $NAMX     -> ObtainsById           ( $DB , $TABLE                      ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                             ( $COLUMN                           ) {
+      case "language"                                                        :
+        $NAMX -> Locality  = $VALUE                                          ;
+        if ( $NAMX -> isExistsId ( $DB , $TABLE ) )                          {
+          $NAMX -> Priority = $NAMX -> LastPosition ( $DB , $TABLE )         ;
+          $RELOAD = true                                                     ;
+        }                                                                    ;
+        $DB   -> LockWrites            ( [ $TABLE ]                        ) ;
+        $DB   -> SyncId                ( $DB , $TABLE                      ) ;
+        $DB   -> UnlockTables          (                                   ) ;
+      break                                                                  ;
+      case "relevance"                                                       :
+        $NAMX -> Relevance = $VALUE                                          ;
+        if ( $NAMX -> isExistsId ( $DB , $TABLE ) )                          {
+          $NAMX -> Priority = $NAMX -> LastPosition ( $DB , $TABLE )         ;
+          $RELOAD = true                                                     ;
+        }                                                                    ;
+        $DB   -> LockWrites            ( [ $TABLE ]                        ) ;
+        $DB   -> SyncId                ( $DB , $TABLE                      ) ;
+        $DB   -> UnlockTables          (                                   ) ;
+      break                                                                  ;
+      case "priority"                                                        :
+        $NAMX -> Priority  = $VALUE                                          ;
+        if ( $NAMX -> isExistsId ( $DB , $TABLE ) )                          {
+          $NAMX -> Priority = $NAMX -> LastPosition ( $DB , $TABLE )         ;
+          $RELOAD = true                                                     ;
+        }                                                                    ;
+        $DB   -> LockWrites            ( [ $TABLE ]                        ) ;
+        $DB   -> SyncId                ( $DB , $TABLE                      ) ;
+        $DB   -> UnlockTables          (                                   ) ;
+      break                                                                  ;
+      case "flags"                                                           :
+        $NAMX -> Flags = intval        ( $VALUE , 16                       ) ;
+        $DB   -> LockWrites            ( [ $TABLE ]                        ) ;
+        $NAMX -> UpdateFlagsById       ( $DB , $TABLE                      ) ;
+        $DB   -> UnlockTables          (                                   ) ;
+      break                                                                  ;
+      case "name"                                                            :
+        //////////////////////////////////////////////////////////////////////
+        $NAMX -> Name = $VALUE                                               ;
+        //////////////////////////////////////////////////////////////////////
+        $DB   -> LockWrites            ( [ $TABLE ]                        ) ;
+        $NAMX -> Editing               ( $DB , $TABLE                      ) ;
+        $DB   -> UnlockTables          (                                   ) ;
+        //////////////////////////////////////////////////////////////////////
+        if                             ( strlen ( $VALUE ) <= 0            ) {
+          $RELOAD = true                                                     ;
+        }                                                                    ;
+        //////////////////////////////////////////////////////////////////////
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                   ( $RELOAD                           ) {
+    //////////////////////////////////////////////////////////////////////////
+    $MSG       = self::CreateUuidNames ( $DB                                 ,
+                                         $PICKDB                             ,
+                                         $TABLE                              ,
+                                         $ID                                 ,
+                                         $UUID                               ,
+                                         $LANGUAGE                           ,
+                                         $LOCALITY                           ,
+                                         true                                ,
+                                         $Options                          ) ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Message" ] = $MSG                                                   ;
   $AA [ "Answer"  ] = "Yes"                                                  ;
   ////////////////////////////////////////////////////////////////////////////
   return $AA                                                                 ;
@@ -3114,6 +3228,45 @@ public static function UuidNamesEditor   ( $argv , $Content , $Options     ) {
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| UuidNamesEditor |-
+
+//////////////////////////////////////////////////////////////////////////////
+// +| AitkNameItemChanged |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkNameItemChanged ( $DB                             ,
+                                             $PICKDB                         ,
+                                             $HH                             ,
+                                             $AA                             ,
+                                             $Options                      ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLE       = $HH -> Parameter          ( "Table"                       ) ;
+  $UUID        = $HH -> Parameter          ( "Uuid"                        ) ;
+  $LOCALITY    = $HH -> Parameter          ( "Locality"                    ) ;
+  $RELEVANCE   = $HH -> Parameter          ( "Relevance"                   ) ;
+  $PRIORITY    = $HH -> Parameter          ( "Priority"                    ) ;
+  $NAME        = $HH -> Parameter          ( "Name"                        ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NAMX        = new Name                  (                               ) ;
+  $NAMX       -> Id        = -1                                              ;
+  $NAMX       -> Uuid      = $UUID                                           ;
+  $NAMX       -> Locality  = $LOCALITY                                       ;
+  $NAMX       -> Relevance = $RELEVANCE                                      ;
+  $NAMX       -> Priority  = $PRIORITY                                       ;
+  $NAMX       -> Name      = $NAME                                           ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DB         -> LockWrites                ( [ $TABLE ]                    ) ;
+  $NAMX       -> Editing                   ( $DB , $TABLE                  ) ;
+  $NAMX       -> Priority  = $PRIORITY                                       ;
+  if                                       ( strlen ( $NAME ) > 0          ) {
+    $NAMX     -> UpdatePriorityById        ( $DB , $TABLE                  ) ;
+  }                                                                          ;
+  $DB         -> UnlockTables              (                               ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AitkNameItemChanged |-
 //////////////////////////////////////////////////////////////////////////////
 // +| MultilingualTranslator |+
 // 多國語言對照翻譯
@@ -3122,21 +3275,267 @@ public static function MultilingualTranslator ( $argv                        ,
                                                 $Content                     ,
                                                 $Options                   ) {
   ////////////////////////////////////////////////////////////////////////////
-  $HOST          = self::GetCurrentDB  ( $argv , $Options                  ) ;
-  ////////////////////////////////////////////////////////////////////////////
-  $DBX           = new DB              (                                   ) ;
-  if                                   ( ! $DBX -> Connect ( $HOST )       ) {
-    return $DBX -> ConnectionError     (                                   ) ;
+  if                                 ( strlen ( $Content ) <= 0            ) {
+    return ""                                                                ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-
+  $HOST  = self::GetCurrentDB         ( $argv , $Options                   ) ;
+  $TOTAL = ""                                                                ;
   ////////////////////////////////////////////////////////////////////////////
-  $HT            = new Html            (                                   ) ;
-
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $DBX          -> Close               (                                   ) ;
+  $LANG        = 1002                                                        ;
+  $TRANSLATEs  =                      [ 1001 , 1002                        ] ;
+  $PICKDB      = "CIOS"                                                      ;
+  $TABLE       = "`names`"                                                   ;
+  $EDIT        = true                                                        ;
+  $AT          = 0                                                           ;
+  $PRIORITY    = 0                                                           ;
+  $RELEVANCE   = "Default"                                                   ;
+  $RELVID      = 0                                                           ;
   ////////////////////////////////////////////////////////////////////////////
-  return $HT    -> Content             (                                   ) ;
+  $PARAMETERs  = [ "function"                                                ,
+                   "database"                                                ,
+                   "table"                                                   ,
+                   "at"                                                      ,
+                   "readonly"                                                ,
+                   "priority"                                                ,
+                   "relevance"                                               ,
+                   "locality"                                                ,
+                   "languages"                                             ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TITLEs      = array                (                                    ) ;
+  $COLUMNS     = self::GetTag         ( "columns"   , $argv                ) ;
+  if                                  ( strlen ( $COLUMNS ) > 0            ) {
+    array_push                        ( $PARAMETERs , "columns"            ) ;
+    $TOTAL     = intval               ( $COLUMNS    , 10                   ) ;
+    if                                ( ( $TOTAL > 0 ) and ( $TOTAL < 51 ) ) {
+      for                             ( $II = 0 ; $II < $TOTAL ; $II++     ) {
+        //////////////////////////////////////////////////////////////////////
+        $TITLE = self::GetTag         ( $II         , $argv                ) ;
+        array_push                    ( $TITLEs     , $TITLE               ) ;
+        array_push                    ( $PARAMETERs , "$II"                ) ;
+        //////////////////////////////////////////////////////////////////////
+      }                                                                      ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS      = array                (                                    ) ;
+  $KEYs        = array_keys           ( $argv                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                             ( $KEYs as $K                        ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S         = strtolower           ( $K                                 ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                            ( $S                                 ) {
+      case "function"                                                        :
+      break                                                                  ;
+      case "database"                                                        :
+        $PICKDB    = self::GetTag     ( $K    , $argv                      ) ;
+      break                                                                  ;
+      case "table"                                                           :
+        $TABLE     = self::GetTag     ( $K    , $argv                      ) ;
+      break                                                                  ;
+      case "at"                                                              :
+        $AT        = self::GetTag     ( $K    , $argv                      ) ;
+        $AT        = intval           ( $AT , 10                           ) ;
+      break                                                                  ;
+      case "priority"                                                        :
+        $PRIORITY  = self::GetTag     ( $K    , $argv                      ) ;
+      break                                                                  ;
+      case "relevance"                                                       :
+        $RELEVANCE = self::GetTag     ( $K    , $argv                      ) ;
+      break                                                                  ;
+      case "locality"                                                        :
+        $LANG      = self::GetTag     ( $K    , $argv                      ) ;
+      break                                                                  ;
+      case "languages"                                                       :
+        $LANXZ     = self::GetTag     ( $K    , $argv                      ) ;
+        $TRANSLATEs = explode         ( " "   , $LANXZ                     ) ;
+      break                                                                  ;
+      case "readonly"                                                        :
+        $ROV       = self::GetTag     ( $K    , $argv                      ) ;
+        $ROV       = strtolower       ( $ROV                               ) ;
+        if                            ( strlen ( $ROV ) <= 0               ) {
+          $EDIT    = false                                                   ;
+        } else
+        if ( in_array ( $ROV , [ "yes" , "true" ] ) )                        {
+          $EDIT    = false                                                   ;
+        }                                                                    ;
+      break                                                                  ;
+      default                                                                :
+        if                            ( ! in_array ( $K , $PARAMETERs )    ) {
+          $V       = self::GetTag     ( $K    , $argv                      ) ;
+          $PARAMS [ $K ] = $V                                                ;
+        }                                                                    ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `id` from `relevance`"                              .
+                 " where ( `name` = '{$RELEVANCE}' ) ;"                      ;
+  $RELX        = $DBX -> FetchOne     ( $QQ                                ) ;
+  if                                  ( strlen ( $RELX ) > 0               ) {
+    $RELVID    = intval               ( $RELX , 10                         ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MAPXs       = array                (                                    ) ;
+  $LCIDs       = array                (                                    ) ;
+  $LANGs       = array                (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  // 抓取地方慣用語
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ          = "select `code`,`uuid` from `locality`"                      .
+                   " where ( `code` > 0 )"                                   .
+                   " order by `code` asc ;"                                  ;
+  $qq          = $DBX -> Query        ( $QQ                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                  ( $DBX -> hasResult ( $qq )          ) {
+    //////////////////////////////////////////////////////////////////////////
+    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH ) )                       {
+      ////////////////////////////////////////////////////////////////////////
+      $CODE    = $rr [ 0 ]                                                   ;
+      $LUID    = $rr [ 1 ]                                                   ;
+      $MAPXs [ $CODE ] = $LUID                                               ;
+      ////////////////////////////////////////////////////////////////////////
+      array_push                      ( $LCIDs , $CODE                     ) ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  // 抓取地方慣用語翻譯
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                             ( $LCIDs as $CODE                    ) {
+    $LUID      = $MAPXs [ $CODE ]                                            ;
+    $QQ        = "select `name` from `names`"                                .
+                   " where ( `uuid` = {$LUID} )"                             .
+                   " and ( `locality` = {$LANG} )"                           .
+                   " and ( `relevance` = 0 )"                                .
+                   " and ( `priority` = 0 ) ;"                               ;
+    $NAME      = $DBX -> FetchOne     ( $QQ                                ) ;
+    $LANGs [ $CODE ] = $NAME                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HT          = new Html             (                                    ) ;
+  $HT         -> setTag               ( "table"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $VARs        = array_keys           ( $PARAMS                            ) ;
+  foreach                             ( $VARs as $V                        ) {
+    $HT       -> AddPair              ( $V , $PARAMS [ $V ]                ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $THREAD      = $HT     -> addHtml   ( "thread"                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TBODY       = $HT     -> addHtml   ( "tbody"                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $LISTS       = array                (                                    ) ;
+  $qq          = $DBX    -> Query     ( $Content                           ) ;
+  if                                  ( $DBX -> hasResult ( $qq )          ) {
+    while ( $rr = $qq -> fetch_array ( MYSQLI_ASSOC ) )                      {
+      ////////////////////////////////////////////////////////////////////////
+      $KEYs    = array_keys           ( $rr                                ) ;
+      if                              ( count ( $TITLEs ) <= 0             ) {
+        $TITLEs = $KEYs                                                      ;
+      }                                                                      ;
+      ////////////////////////////////////////////////////////////////////////
+      array_push                      ( $LISTS , $rr                       ) ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                             ( $LISTS as $rr                      ) {
+    $TRX       = $TBODY -> addTr      (                                    ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $KEYs      = array_keys           ( $rr                                ) ;
+    $IdAt      = 0                                                           ;
+    foreach                           ( $KEYs as $K                        ) {
+      if                              ( $AT == $IdAt                       ) {
+        $UUIX  = $rr [ $K ]                                                  ;
+        foreach                       ( $TRANSLATEs as $L                  ) {
+          if                          ( array_key_exists ( $L , $LANGs )   ) {
+            //////////////////////////////////////////////////////////////////
+            $QQ    = "select `name` from {$TABLE}"                           .
+                     " where ( `uuid` = {$UUIX} )"                           .
+                     " and ( `locality` = {$L} )"                            .
+                     " and ( `priority` = {$PRIORITY} )"                     .
+                     " and ( `relevance` = {$RELVID} )"                      .
+                     " order by `id` asc limit 0,1 ;"                        ;
+            //////////////////////////////////////////////////////////////////
+            $NAME  = $DBX -> FetchOne ( $QQ                                ) ;
+            //////////////////////////////////////////////////////////////////
+            if                        ( $EDIT                              ) {
+              ////////////////////////////////////////////////////////////////
+              $TDX = $TRX -> addTd    (                                    ) ;
+              $TDX -> AddPair         ( "width" , "1%"                     ) ;
+              ////////////////////////////////////////////////////////////////
+              $JSC = "AitkNameItemChanged('{$PICKDB}','{$TABLE}','{$UUIX}',{$L},{$RELVID},{$PRIORITY},this.value);" ;
+              $INP = $TDX -> addInput (                                    ) ;
+              $INP -> AddPair         ( "type"     , "text"                ) ;
+              $INP -> AddPair         ( "class"    , "NameItemAppellation" ) ;
+              $INP -> AddPair         ( "onchange" , $JSC                  ) ;
+              $INP -> AddPair         ( "value"    , $NAME                 ) ;
+              ////////////////////////////////////////////////////////////////
+            } else                                                           {
+              ////////////////////////////////////////////////////////////////
+              $TDX = $TRX -> addTd    ( $NAME                              ) ;
+              ////////////////////////////////////////////////////////////////
+            }                                                                ;
+            //////////////////////////////////////////////////////////////////
+          }                                                                  ;
+        }                                                                    ;
+      } else                                                                 {
+        $TRX  -> addTd                ( $rr [ $K ]                         ) ;
+      }                                                                      ;
+      ////////////////////////////////////////////////////////////////////////
+      $IdAt    = $IdAt + 1                                                   ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                  ( count ( $TITLEs ) > 0              ) {
+    //////////////////////////////////////////////////////////////////////////
+    $TITx      = array                (                                    ) ;
+    $IdAt      = 0                                                           ;
+    foreach                           ( $TITLEs as $T                      ) {
+      ////////////////////////////////////////////////////////////////////////
+      if                              ( $AT == $IdAt                       ) {
+        foreach                       ( $TRANSLATEs as $L                  ) {
+          if                          ( array_key_exists ( $L , $LANGs )   ) {
+            array_push                ( $TITx , $LANGs [ $L ]              ) ;
+          }                                                                  ;
+        }                                                                    ;
+      } else                                                                 {
+        array_push                    ( $TITx , $T                         ) ;
+      }                                                                      ;
+      ////////////////////////////////////////////////////////////////////////
+      $IdAt    = $IdAt + 1                                                   ;
+      ////////////////////////////////////////////////////////////////////////
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    $TRX       = $THREAD -> addTr     (                                    ) ;
+    foreach                           ( $TITx as $T                        ) {
+      $TD      = $TRX    -> addTd     ( $T                                 ) ;
+      $TD     -> AddPair              ( "class" , "SqlTableHeader"         ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    $TFOOT     = $HT     -> addHtml   ( "tfoot"                            ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $TRX       = $TFOOT  -> addTr     (                                    ) ;
+    foreach                           ( $TITx as $T                        ) {
+      $TD      = $TRX    -> addTd     ( $T                                 ) ;
+      $TD     -> AddPair              ( "class" , "SqlTableHeader"         ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HT -> Content               (                                    ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| MultilingualTranslator |-
