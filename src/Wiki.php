@@ -3511,7 +3511,8 @@ public static function MultilingualTranslator ( $argv                        ,
           }                                                                  ;
         }                                                                    ;
       } else                                                                 {
-        $TRX  -> addTd                ( $rr [ $K ] , "" , "NameItemColumn" ) ;
+        $TDX   = $TRX  -> addTd       (                                    ) ;
+        $TDX  -> addSpan              ( $rr [ $K ] , "" , "NameItemColumn" ) ;
       }                                                                      ;
       ////////////////////////////////////////////////////////////////////////
       $IdAt    = $IdAt + 1                                                   ;
