@@ -221,6 +221,26 @@ public static function WildAJAX  ( $DB , $PICKDB , $HH , $AA , $Options    ) {
 //////////////////////////////////////////////////////////////////////////////
 public static function ExportXML  ( $argv , $Content , $Options            ) {
   ////////////////////////////////////////////////////////////////////////////
+  $DIRS         = $Options        [ "Directory"                            ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DIR          = self::GetTag    ( "directory" , $argv                    ) ;
+  $FILENAME     = self::GetTag    ( "filename"  , $argv                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                              ( strlen ( $FILENAME ) > 0               ) {
+    if                            ( strlen ( $DIR ) <= 0                   ) {
+      $DIR      = "Default"                                                  ;
+    }                                                                        ;
+    if                            ( array_key_exists ( $DIR , $DIRS )      ) {
+      $PATHX    = $DIRS           [ $DIR                                   ] ;
+      $FILE     = "{$PATHX}/{$FILENAME}"                                     ;
+      $TEXT     = file_get_contents ( $FILE                                ) ;
+      if                          ( ! $TEXT                                ) {
+      } else                                                                 {
+        $Content = $TEXT                                                     ;
+      }                                                                      ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   return $Content                                                            ;
   ////////////////////////////////////////////////////////////////////////////
 }
