@@ -3298,11 +3298,15 @@ public static function MultilingualTranslator ( $argv                        ,
   $PRIORITY    = 0                                                           ;
   $RELEVANCE   = "Default"                                                   ;
   $RELVID      = 0                                                           ;
+  $ROWS        = 3                                                           ;
+  $INPTAG      = "input"                                                     ;
   ////////////////////////////////////////////////////////////////////////////
   $PARAMETERs  = [ "function"                                                ,
                    "database"                                                ,
                    "table"                                                   ,
                    "at"                                                      ,
+                   "input"                                                   ,
+                   "rows"                                                    ,
                    "readonly"                                                ,
                    "priority"                                                ,
                    "relevance"                                               ,
@@ -3344,6 +3348,14 @@ public static function MultilingualTranslator ( $argv                        ,
       case "at"                                                              :
         $AT        = self::GetTag     ( $K    , $argv                      ) ;
         $AT        = intval           ( $AT , 10                           ) ;
+      break                                                                  ;
+      case "rows"                                                            :
+        $ROWS      = self::GetTag     ( $K    , $argv                      ) ;
+        $ROWS      = intval           ( $AT , 10                           ) ;
+      break                                                                  ;
+      case "input"                                                           :
+        $INPTAG    = self::GetTag     ( $K    , $argv                      ) ;
+        $INPTAG    = strtolower       ( $INPTAG                            ) ;
       break                                                                  ;
       case "priority"                                                        :
         $PRIORITY  = self::GetTag     ( $K    , $argv                      ) ;
@@ -3475,22 +3487,31 @@ public static function MultilingualTranslator ( $argv                        ,
               $TDX -> AddPair         ( "width" , "1%"                     ) ;
               ////////////////////////////////////////////////////////////////
               $JSC = "AitkNameItemChanged('{$PICKDB}','{$TABLE}','{$UUIX}',{$L},{$RELVID},{$PRIORITY},this.value);" ;
-              $INP = $TDX -> addInput (                                    ) ;
-              $INP -> AddPair         ( "type"     , "text"                ) ;
-              $INP -> AddPair         ( "class"    , "NameItemAppellation" ) ;
-              $INP -> AddPair         ( "onchange" , $JSC                  ) ;
-              $INP -> AddPair         ( "value"    , $NAME                 ) ;
+              if                        ( $INPTAG == "textarea"            ) {
+                $TXA = $TDX -> addHtml  ( "textarea"                       ) ;
+                $TXA -> AddPair         ( "rows"     , $ROWS               ) ;
+                $TXA -> AddPair         ( "class"  , "NameItemAppellation" ) ;
+                $TXA -> AddPair         ( "onchange" , $JSC                ) ;
+                $TXA -> AddText         ( $NAME                            ) ;
+              } else                                                         {
+                $INP = $TDX -> addInput (                                  ) ;
+                $INP -> AddPair         ( "type"     , "text"              ) ;
+                $INP -> AddPair         ( "class"  , "NameItemAppellation" ) ;
+                $INP -> AddPair         ( "onchange" , $JSC                ) ;
+                $INP -> AddPair         ( "value"    , $NAME               ) ;
+              }                                                              ;
               ////////////////////////////////////////////////////////////////
             } else                                                           {
               ////////////////////////////////////////////////////////////////
               $TDX = $TRX -> addTd    ( $NAME                              ) ;
+              $TDX -> AddPair         ( "class"  , "NameItemAppellation"   ) ;
               ////////////////////////////////////////////////////////////////
             }                                                                ;
             //////////////////////////////////////////////////////////////////
           }                                                                  ;
         }                                                                    ;
       } else                                                                 {
-        $TRX  -> addTd                ( $rr [ $K ]                         ) ;
+        $TRX  -> addTd                ( $rr [ $K ] , "" , "NameItemColumn" ) ;
       }                                                                      ;
       ////////////////////////////////////////////////////////////////////////
       $IdAt    = $IdAt + 1                                                   ;
