@@ -3289,7 +3289,6 @@ public static function UuidNamesEditor   ( $argv , $Content , $Options     ) {
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| UuidNamesEditor |-
-
 //////////////////////////////////////////////////////////////////////////////
 // +| AitkNameItemChanged |+
 //////////////////////////////////////////////////////////////////////////////
@@ -3623,6 +3622,70 @@ public static function MultilingualTranslator ( $argv                        ,
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| MultilingualTranslator |-
+//////////////////////////////////////////////////////////////////////////////
+// +| WordPressContent |+
+//////////////////////////////////////////////////////////////////////////////
+public static function WordPressContent ( $DB                                ,
+                                          $PICKDB                            ,
+                                          $HH                                ,
+                                          $AA                                ,
+                                          $Options                         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLE       = $HH -> Parameter       ( "Table"                          ) ;
+  $UUID        = $HH -> Parameter       ( "Uuid"                           ) ;
+  $LOCALITY    = $HH -> Parameter       ( "Locality"                       ) ;
+  $RELEVANCE   = $HH -> Parameter       ( "Relevance"                      ) ;
+  $PRIORITY    = $HH -> Parameter       ( "Priority"                       ) ;
+  $NAME        = $HH -> Parameter       ( "Name"                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| WordPressContent |-
+//////////////////////////////////////////////////////////////////////////////
+// +| WordPressUI |+
+// WordPress編輯器
+//////////////////////////////////////////////////////////////////////////////
+public static function WordPressUI    ( $argv , $Content , $Options        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOST        = self::GetCurrentDB   ( $argv    , $Options                ) ;
+  $TABLE       = self::GetTag         ( "table"  , $argv                   ) ;
+  $HEADERS     = self::GetTag         ( "header" , $argv                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                  ( strlen ( $TABLE ) <= 0             ) {
+    return "You need to assign your wordpress post table such as wp_posts."  ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                  ( strlen ( $HEADERS ) <= 0           ) {
+    return "You need to assign your wordpress header key arrays."            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = new DB               (                                    ) ;
+  if                                  ( ! $DBX -> Connect ( $HOST )        ) {
+    return $DBX -> ConnectionError    (                                    ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Id          = self::RandomString   ( "WordPress-" , 24                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Templates   = $Options             [ "Templates"                        ] ;
+  $EXTENSION   = $Options             [ "AITK"                             ] ;
+  $PATHX       = $Options             [ "Extension"                        ] ;
+  $TEMPLFILE   = $Templates           [ "WordPress::Editor"                ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HTML        = file_get_contents    ( $TEMPLFILE                         ) ;
+
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX  -> Close                      (                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HTML                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| WordPressUI |-
 //////////////////////////////////////////////////////////////////////////////
 // +| Ethnologue |+
 // 民族語
@@ -4566,7 +4629,7 @@ public static function ActionsTheme   ( $argv , $Content , $Options        ) {
   $Id          = self::GetTag        ( "id"        , $argv                 ) ;
   $Filename    = self::GetTag        ( "filename"  , $argv                 ) ;
   $Directory   = self::GetTag        ( "directory" , $argv                 ) ;
-  $THEME       = self::GetTag        ( "directory" , $argv                 ) ;
+  $THEME       = self::GetTag        ( "theme"     , $argv                 ) ;
   $Original    = $Filename                                                   ;
   $Label       = $GLOBALS            [ "UpdateFile"                        ] ;
   ////////////////////////////////////////////////////////////////////////////
