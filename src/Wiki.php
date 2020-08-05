@@ -5054,6 +5054,71 @@ public static function Earth          ( $argv , $Content , $Options        ) {
 //////////////////////////////////////////////////////////////////////////////
 // -| Earth |-
 //////////////////////////////////////////////////////////////////////////////
+// +| RequestHostRPC |+
+// 發出遠端程序命令
+//////////////////////////////////////////////////////////////////////////////
+public static function RequestHostRPC ( $URL , $HEADERS , $POSTING         ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $JXON = json_encode ( $POSTING                                           ) ;
+  $JLEN = strlen      ( $JXON                                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PASS = $HEADERS                                                           ;
+  array_push          ( $PASS , "Content-Length: {$JLEN}"                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ch   = curl_init   (                                                    ) ;
+  curl_setopt         ( $ch , CURLOPT_URL            , $URL                ) ;
+//  curl_setopt         ( $ch , CURLOPT_POST           , true               ) ;
+  curl_setopt         ( $ch , CURLOPT_CUSTOMREQUEST  , "POST"              ) ;
+  curl_setopt         ( $ch , CURLOPT_POSTFIELDS     , $JXON               ) ;
+  curl_setopt         ( $ch , CURLOPT_RETURNTRANSFER , true                ) ;
+  curl_setopt         ( $ch , CURLOPT_HEADER         , false               ) ;
+  curl_setopt         ( $ch , CURLOPT_HTTPHEADER     , $PASS               ) ;
+  curl_setopt         ( $ch , CURLOPT_SSL_VERIFYHOST , false               ) ;
+  curl_setopt         ( $ch , CURLOPT_SSL_VERIFYPEER , false               ) ;
+  $RR  = curl_exec    ( $ch                                                ) ;
+         curl_close   ( $ch                                                ) ;
+  $RR  = str_replace  ( "'" , '"' , $RR                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return json_decode  ( $RR  , true                                        ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| RequestHostRPC |-
+//////////////////////////////////////////////////////////////////////////////
+// +| SendHostRPC |+
+// 對遠端機器發出遠端程序命令
+//////////////////////////////////////////////////////////////////////////////
+public static function SendHostRPC      ( $CONF , $CMD , $POSTING          ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOSTNAME = $CONF [ "Hostname" ]                                           ;
+  $USERNAME = $CONF [ "Username" ]                                           ;
+  $PASSWORD = $CONF [ "Password" ]                                           ;
+  ////////////////////////////////////////////////////////////////////////////
+  $URL      = "{$HOSTNAME}/{$CMD}"                                           ;
+  $HEADERS  = array                                                          (
+    "Username: {$USERNAME}"                                                  ,
+    "Password: {$PASSWORD}"                                                  ,
+    "Content-Type: application/json"                                         ,
+    "Accept: application/json"                                               ,
+  )                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return self::RequestHostRPC           ( $URL , $HEADERS , $POSTING       ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| SendHostRPC |-
+//////////////////////////////////////////////////////////////////////////////
+// +| SendRPC |+
+// 對遠端機器發出遠端程序命令
+//////////////////////////////////////////////////////////////////////////////
+public static function SendRPC        ( $HOST , $CMD , $POSTING , $Options ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HOSTS = $Options                   [ "Hostnames"                        ] ;
+  $CONF  = $HOSTS                     [ $HOST                              ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return self::SendHostRPC            ( $CONF , $CMD , $POSTING            ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| SendRPC |-
+//////////////////////////////////////////////////////////////////////////////
 // +| RPC |+
 // 遠端程序控制
 //////////////////////////////////////////////////////////////////////////////
