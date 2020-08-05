@@ -3621,40 +3621,131 @@ public static function MultilingualTranslator ( $argv                        ,
   return $HT -> Content               (                                    ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
-// -| MultilingualTranslator |-
+// -| GetWordPressContent |-
 //////////////////////////////////////////////////////////////////////////////
-// +| WordPressContent |+
+public static function GetWordPressContent ( $DB                             ,
+                                             $TABLE                          ,
+                                             $PTYPE                          ,
+                                             $HEADERS                        ,
+                                             $AUTHOR = ""                  ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $PUBLISH = "draft"                                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `ID`,`post_content` from {$TABLE}"                      .
+             " where ( `post_type` = '{$PTYPE}' )"                           .
+             " and ( `post_status` = '{$PUBLISH}' )"                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                       ( strlen ( $AUTHOR ) > 0        ) {
+    $QQ    = $QQ                                                             .
+             " and ( `post_author` = {$AUTHOR} )"                            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMS   = array                         (                               ) ;
+  $LISTS   = explode                       ( " " , $HEADERS                ) ;
+  foreach                                  ( $LISTS as $H                  ) {
+    $HX    = "%{$H}%"                                                        ;
+    $QQ    = $QQ . " and ( `post_title` like '{$HX}' )"                      ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = $QQ . " order by `post_modified` desc limit 0,1 ;"              ;
+  ////////////////////////////////////////////////////////////////////////////
+  $qq      = $DB -> Query                  ( $QQ                           ) ;
+  if                                       ( $DB -> hasResult ( $qq )      ) {
+    $rr    = $qq -> fetch_array            ( MYSQLI_BOTH                   ) ;
+    return array                                                             (
+      "Answer"   => true                                                     ,
+      "Id"       => $rr [ 0 ]                                                ,
+      "Content"  => $rr [ 1 ]                                                ,
+    )                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return array ( "Answer" => false )                                         ;
+}
 //////////////////////////////////////////////////////////////////////////////
-public static function WordPressContent ( $DB                                ,
-                                          $PICKDB                            ,
-                                          $HH                                ,
-                                          $AA                                ,
-                                          $Options                         ) {
+// +| GetWordPressContent |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkWriteWordPress  ( $DB                             ,
+                                             $PICKDB                         ,
+                                             $HH                             ,
+                                             $AA                             ,
+                                             $Options                      ) {
   ////////////////////////////////////////////////////////////////////////////
-  $TABLE       = $HH -> Parameter       ( "Table"                          ) ;
-  $UUID        = $HH -> Parameter       ( "Uuid"                           ) ;
-  $LOCALITY    = $HH -> Parameter       ( "Locality"                       ) ;
-  $RELEVANCE   = $HH -> Parameter       ( "Relevance"                      ) ;
-  $PRIORITY    = $HH -> Parameter       ( "Priority"                       ) ;
-  $NAME        = $HH -> Parameter       ( "Name"                           ) ;
+  $TABLE       = $HH -> Parameter          ( "Table"                       ) ;
+  $AUTHOR      = $HH -> Parameter          ( "Author"                      ) ;
+  $PTYPE       = $HH -> Parameter          ( "Type"                        ) ;
+  $HEADERS     = $HH -> Parameter          ( "Headers"                     ) ;
+  $HTML        = $HH -> Parameter          ( "Html"                        ) ;
   ////////////////////////////////////////////////////////////////////////////
-
+  $WP          = self::GetWordPressContent ( $DB                             ,
+                                             $TABLE                          ,
+                                             $PTYPE                          ,
+                                             $HEADERS                        ,
+                                             $AUTHOR                       ) ;
+  if                                       ( $WP [ "Answer" ]              ) {
+    $ID        = $WP                       [ "Id"                          ] ;
+    //////////////////////////////////////////////////////////////////////////
+    $DB       -> LockWrites                ( [ $TABLE ]                    ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $QQ        = "update {$TABLE} set `post_content` = ?"                    .
+                 " where ( `ID` = {$ID} ) ; "                                ;
+    $qq        = $DB   -> Prepare          ( $QQ                           ) ;
+    $qq       -> bind_param                ( 's' , $HTML                   ) ;
+    $qq       -> execute                   (                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $DB       -> UnlockTables              (                               ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $AA [ "Answer"  ] = "Yes"                                                ;
+  } else                                                                     {
+    $AA [ "Answer"  ] = "No"                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AitkWriteWordPress |-
+//////////////////////////////////////////////////////////////////////////////
+// +| AitkReadWordPress |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkReadWordPress  ( $DB                              ,
+                                            $PICKDB                          ,
+                                            $HH                              ,
+                                            $AA                              ,
+                                            $Options                       ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $TABLE       = $HH -> Parameter         ( "Table"                        ) ;
+  $AUTHOR      = $HH -> Parameter         ( "Author"                       ) ;
+  $PTYPE       = $HH -> Parameter         ( "Type"                         ) ;
+  $HEADERS     = $HH -> Parameter         ( "Headers"                      ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $WP            = self::GetWordPressContent  ( $DB                          ,
+                                                $TABLE                       ,
+                                                $PTYPE                       ,
+                                                $HEADERS                     ,
+                                                $AUTHOR                    ) ;
+  if                                  ( $WP [ "Answer" ]                   ) {
+    $AA [ "Message" ] = $WP [ "Content" ]                                    ;
+  } else                                                                     {
+    $AA [ "Message" ] = ""                                                   ;
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   $AA [ "Answer"  ] = "Yes"                                                  ;
   ////////////////////////////////////////////////////////////////////////////
   return $AA                                                                 ;
 }
 //////////////////////////////////////////////////////////////////////////////
-// -| WordPressContent |-
+// -| AitkReadWordPress |-
 //////////////////////////////////////////////////////////////////////////////
 // +| WordPressUI |+
 // WordPress編輯器
 //////////////////////////////////////////////////////////////////////////////
 public static function WordPressUI    ( $argv , $Content , $Options        ) {
   ////////////////////////////////////////////////////////////////////////////
-  $HOST        = self::GetCurrentDB   ( $argv    , $Options                ) ;
-  $TABLE       = self::GetTag         ( "table"  , $argv                   ) ;
-  $HEADERS     = self::GetTag         ( "header" , $argv                   ) ;
+  $HOST          = self::GetCurrentDB ( $argv      , $Options              ) ;
+  $PICKDB        = self::GetTag       ( "database" , $argv                 ) ;
+  $TABLE         = self::GetTag       ( "table"    , $argv                 ) ;
+  $HEADERS       = self::GetTag       ( "header"   , $argv                 ) ;
+  $PTYPE         = self::GetTag       ( "type"     , $argv                 ) ;
+  $PTYPE         = strtolower         ( $PTYPE                             ) ;
   ////////////////////////////////////////////////////////////////////////////
   if                                  ( strlen ( $TABLE ) <= 0             ) {
     return "You need to assign your wordpress post table such as wp_posts."  ;
@@ -3664,21 +3755,93 @@ public static function WordPressUI    ( $argv , $Content , $Options        ) {
     return "You need to assign your wordpress header key arrays."            ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $DBX         = new DB               (                                    ) ;
+  if ( ! in_array ( $PTYPE , [ "page" , "post" ] ) )                         {
+    return "WordPress has only two types, page or post."                     ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX           = new DB             (                                    ) ;
   if                                  ( ! $DBX -> Connect ( $HOST )        ) {
     return $DBX -> ConnectionError    (                                    ) ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
-  $Id          = self::RandomString   ( "WordPress-" , 24                  ) ;
+  $Templates     = $Options           [ "Templates"                        ] ;
+  $EXTENSION     = $Options           [ "AITK"                             ] ;
+  $PATHX         = $Options           [ "Extension"                        ] ;
+  $TEMPLFILE     = $Templates         [ "WordPress::Editor"                ] ;
+  $TEMPLFILE     = "{$PATHX}/{$TEMPLFILE}"                                   ;
   ////////////////////////////////////////////////////////////////////////////
-  $Templates   = $Options             [ "Templates"                        ] ;
-  $EXTENSION   = $Options             [ "AITK"                             ] ;
-  $PATHX       = $Options             [ "Extension"                        ] ;
-  $TEMPLFILE   = $Templates           [ "WordPress::Editor"                ] ;
-  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  $TABNAM        = $TABLE                                                    ;
+  $TABNAM        = str_replace        ( "`" , "" , $TABNAM                 ) ;
+  $LABEL         = "Update"                                                  ;
+  $ID            = self::RandomString ( "WordPress-" , 40                  ) ;
+  $READONLY      = ""                                                        ;
+  $AUTHOR        = ""                                                        ;
+  $PARAMETERS    = array              (                                    ) ;
+  $KEYs          = array_keys         ( $argv                              ) ;
   ////////////////////////////////////////////////////////////////////////////
-  $HTML        = file_get_contents    ( $TEMPLFILE                         ) ;
-
+  foreach                             ( $KEYs as $K                        ) {
+    //////////////////////////////////////////////////////////////////////////
+    $S           = strtolower         ( $K                                 ) ;
+    //////////////////////////////////////////////////////////////////////////
+    switch                            ( $S                                 ) {
+      case "function"                                                        :
+      case "table"                                                           :
+      case "header"                                                          :
+      case "type"                                                            :
+      break                                                                  ;
+      case "id"                                                              :
+        $ID      = self::GetTag       ( $K , $argv                         ) ;
+      break                                                                  ;
+      case "author"                                                          :
+        $AUTHOR  = self::GetTag       ( $K , $argv                         ) ;
+      break                                                                  ;
+      case "label"                                                           :
+        $Label   = self::GetTag       ( $K , $argv                         ) ;
+      break                                                                  ;
+      case "readonly"                                                        :
+        $RO      = self::GetTag       ( $K , $argv                         ) ;
+        $RO      = strtolower         ( $RO                                ) ;
+        if ( ( strlen ( $RO ) <= 0 )                                        ||
+             ( in_array ( $RO , [ "true" , "yes" ] ) )                     ) {
+          $READONLY = "display: none;"                                       ;
+        }                                                                    ;
+      default                                                                :
+        $V       = self::GetTag       ( $K , $argv                         ) ;
+        array_push                    ( $PARAMETERS , "{$K}='{$V}'"        ) ;
+      break                                                                  ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PARMS         = ""                                                        ;
+  if                                  ( count ( $PARAMETERS ) > 0          ) {
+    $PARMS       = implode            ( " " , $PARAMETERS                  ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $MAPS          = array                                                     (
+    "$(WORDPRESS-DB)"        =>   $PICKDB                                    ,
+    "$(WORDPRESS-TABLE)"     =>   $TABLE                                     ,
+    "$(WORDPRESS-AUTHOR)"    =>   $AUTHOR                                    ,
+    "$(WORDPRESS-TYPE)"      =>   $PTYPE                                     ,
+    "$(WORDPRESS-HEADERS)"   =>   $HEADERS                                   ,
+    "$(EDITOR-READONLY)"     =>   $READONLY                                  ,
+    "$(BUTTON-LABEL)"        =>   $LABEL                                     ,
+    "$(EDITOR-TABLE)"        =>   $TABNAM                                    ,
+    "$(EDITOR-LABEL)"        =>   $HEADERS                                   ,
+    "$(EDITOR-ID)"           =>   $ID                                        ,
+    "$(EDITOR-PARAMETERS)"   =>   $PARMS                                     ,
+  )                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $WP            = self::GetWordPressContent  ( $DBX                         ,
+                                                $TABLE                       ,
+                                                $PTYPE                       ,
+                                                $HEADERS                     ,
+                                                $AUTHOR                    ) ;
+  if                                  ( $WP [ "Answer" ]                   ) {
+    $HTML  = Strings::ReplaceFileByKeys ( $TEMPLFILE , $MAPS               ) ;
+  } else                                                                     {
+    $HTML  = "Assign headers does not exist in wordpress database."          ;
+  }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   $DBX  -> Close                      (                                    ) ;
   ////////////////////////////////////////////////////////////////////////////
