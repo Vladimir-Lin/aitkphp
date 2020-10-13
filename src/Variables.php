@@ -1,8 +1,8 @@
 <?php
 
-namespace CIOS ;
+namespace AITK ;
 
-class Note extends Columns
+class Variables extends Columns
 {
 
 public $Id      ;
