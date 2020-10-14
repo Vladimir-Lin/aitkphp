@@ -5399,6 +5399,110 @@ public static function AitkCalendarLoader ( $DB                              ,
 //////////////////////////////////////////////////////////////////////////////
 // -| AitkRpcSender |-
 //////////////////////////////////////////////////////////////////////////////
+// +| FetchCalendarEvent |+
+// 抓取行事曆事件
+//////////////////////////////////////////////////////////////////////////////
+public static function FetchCalendarEvent ( $DB , $PUID , $JSOX , $Options ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $PRDTAB         = "`periods`"                                              ;
+  $NAMTAB         = "`names_others`"                                         ;
+  $NOXTAB         = "`notes`"                                                ;
+  $VARTAB         = "`variables`"                                            ;
+  ////////////////////////////////////////////////////////////////////////////
+  $J              = array                 (                                ) ;
+  $PRD            = new Periode           (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRD -> Uuid    = $PUID                                                    ;
+  if ( ! $PRD -> ObtainsByUuid ( $DB , $PRDTAB ) )                           {
+    return ""                                                                ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TZ             = $JSOX                 [ "TimeZone"                     ] ;
+  $TITLE          = $DB  -> Naming ( $NAMTAB , $PUID , 1002 , "Default" )    ;
+  $SKK            = $PRD -> toTimeString ( $TZ , "start" )                   ;
+  $EKK            = $PRD -> toTimeString ( $TZ , "end"   )                   ;
+  ////////////////////////////////////////////////////////////////////////////
+  $J [ "id"       ]  = $PUID                                                 ;
+  $J [ "title"    ]  = $TITLE                                                ;
+  $J [ "start"    ]  = $SKK                                                  ;
+  $J [ "end"      ]  = $EKK                                                  ;
+  $J [ "editable" ]  = true                                                  ;
+  $J [ "allDay"   ]  = false                                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+  return json_encode ( $J )                                                  ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| FetchCalendarEvent |-
+//////////////////////////////////////////////////////////////////////////////
+// +| ReportCalendarEvents |+
+// 行事曆事件列表
+//////////////////////////////////////////////////////////////////////////////
+public static function ReportCalendarEvents ( $Options                     ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HH      = new \AITK\Parameters    (                                     ) ;
+  $DB      = new \AITK\DB            (                                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PICKDB         = $HH -> Parameter ( "Database"                          ) ;
+  $CurrentDB      = $GLOBALS         [ "AitkWikiDB"                        ] ;
+  $Databases      = $GLOBALS         [ "AitkDatabases"                     ] ;
+  if                                 ( strlen ( $PICKDB ) > 0              ) {
+    if ( array_key_exists ( $PICKDB , $Databases ) )                         {
+      $CurrentDB  = $Databases       [ $PICKDB                             ] ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( ! $DB -> Connect ( $CurrentDB )     ) {
+    header                           ( "Content-Type: application/json"    ) ;
+    return "[ ]"                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRDTAB         = "`periods`"                                              ;
+  $NAMTAB         = "`names_others`"                                         ;
+  $NOXTAB         = "`notes`"                                                ;
+  $VARTAB         = "`variables`"                                            ;
+  ////////////////////////////////////////////////////////////////////////////
+  $START          = $HH -> Parameter ( "start"                             ) ;
+  $ENDST          = $HH -> Parameter ( "end"                               ) ;
+  $JSOT           = $HH -> Parameter ( "JSON"                              ) ;
+  $JSOX           = json_decode      ( $JSOT , true                        ) ;
+  $TZ             = $JSOX            [ "TimeZone"                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SDT            = new StarDate     (                                     ) ;
+  $EDT            = new StarDate     (                                     ) ;
+  $PERIOD         = new Periode      (                                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SDT           -> fromInput        ( $START , $TZ                        ) ;
+  $EDT           -> fromInput        ( $ENDST , $TZ                        ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PERIOD        -> Start = $SDT -> Stardate                                 ;
+  $PERIOD        -> End   = $EDT -> Stardate                                 ;
+  $SPDT           = $SDT -> Stardate                                         ;
+  $EPDT           = $EDT -> Stardate                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ             = "select `uuid` from {$PRDTAB}"                           .
+                    " where ( `used` = 1 )"                                  .
+                    " and ( `start` <= {$EPDT} )"                            .
+                    " and ( `end` >= {$SPDT} )"                              .
+                    " order by `start` asc ;"                                ;
+  $PUIDs          = $DB -> ObtainUuids ( $QQ )                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ITEMs          = array            (                                     ) ;
+  foreach                            ( $PUIDs as $P                        ) {
+    $J            = self::FetchCalendarEvent ( $DB , $P , $JSOX , $Options ) ;
+    if                               ( strlen ( $J ) > 0                   ) {
+      array_push                     ( $ITEMs , $J                         ) ;
+    }                                                                        ;
+  }                                                                          ;
+  $ITEX           = implode          ( "," , $ITEMs                        ) ;
+  $RJ  = "[ {$ITEX} ]"                                                       ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DB      -> Close                  (                                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $RJ                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| ReportCalendarEvents |-
+//////////////////////////////////////////////////////////////////////////////
 // +| CalendarUI |+
 // 行事曆
 //////////////////////////////////////////////////////////////////////////////

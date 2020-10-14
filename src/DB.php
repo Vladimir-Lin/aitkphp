@@ -335,6 +335,14 @@ public function UnlockTables ( )                                             {
   $this -> Query ( $QQ )                                                     ;
 }
 //////////////////////////////////////////////////////////////////////////////
+public function Naming ( $Table , $U , $Locality , $Usage = "Default" )      {
+  $NI         = new Name     (                        )                      ;
+  $NI        -> set          ( "Uuid"     , $U        )                      ;
+  $NI        -> set          ( "Locality" , $Locality )                      ;
+  $NI        -> setRelevance ( $Usage                 )                      ;
+  return $NI -> Fetch        ( $this      , $Table    )                      ;
+}
+//////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 ?>
