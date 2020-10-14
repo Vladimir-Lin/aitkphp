@@ -5422,12 +5422,15 @@ public static function FetchCalendarEvent ( $DB , $PUID , $JSOX , $Options ) {
   $SKK            = $PRD -> toTimeString ( $TZ , "start" )                   ;
   $EKK            = $PRD -> toTimeString ( $TZ , "end"   )                   ;
   ////////////////////////////////////////////////////////////////////////////
-  $J [ "id"       ]  = $PUID                                                 ;
-  $J [ "title"    ]  = $TITLE                                                ;
-  $J [ "start"    ]  = $SKK                                                  ;
-  $J [ "end"      ]  = $EKK                                                  ;
-  $J [ "editable" ]  = true                                                  ;
-  $J [ "allDay"   ]  = false                                                 ;
+  $J [ "id"               ]  = $PUID                                         ;
+  $J [ "title"            ]  = $TITLE                                        ;
+  $J [ "start"            ]  = $SKK                                          ;
+  $J [ "end"              ]  = $EKK                                          ;
+  $J [ "editable"         ]  = true                                          ;
+  $J [ "allDay"           ]  = false                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $J [ "type"             ]  = $PRD -> Type                                  ;
+  $J [ "uuid"             ]  = $PRD -> Uuid                                  ;
   ////////////////////////////////////////////////////////////////////////////
   return json_encode ( $J )                                                  ;
 }
