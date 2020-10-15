@@ -5397,7 +5397,237 @@ public static function AitkCalendarLoader ( $DB                              ,
   return $AA                                                                 ;
 }
 //////////////////////////////////////////////////////////////////////////////
-// -| AitkRpcSender |-
+// -| AitkCalendarLoader |-
+//////////////////////////////////////////////////////////////////////////////
+// +| AitkCalendarEventAppending |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkCalendarEventAppending                            (
+                         $DB                                                 ,
+                         $PICKDB                                             ,
+                         $HH                                                 ,
+                         $AA                                                 ,
+                         $Options                                          ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = $HH -> Parameter         ( "Database"                     ) ;
+  $TZ          = $HH -> Parameter         ( "TimeZone"                     ) ;
+  $RPC         = $HH -> Parameter         ( "RPC"                          ) ;
+  $CID         = $HH -> Parameter         ( "CalendarId"                   ) ;
+  $START       = $HH -> Parameter         ( "Start"                        ) ;
+  $END         = $HH -> Parameter         ( "End"                          ) ;
+  $TITLE       = $HH -> Parameter         ( "Title"                        ) ;
+  $DESCRIPTION = $HH -> Parameter         ( "Description"                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRDTAB      = "`periods`"                                                 ;
+  $NAMTAB      = "`names_others`"                                            ;
+  $NOXTAB      = "`notes`"                                                   ;
+  $VARTAB      = "`variables`"                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW         = new StarDate             (                                ) ;
+  $PRD         = new Periode              (                                ) ;
+  $NAME        = new Name                 (                                ) ;
+  $NOTE        = new Note                 (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW        -> Now                      (                                ) ;
+  $PRD        -> Type     = 4                                                ;
+  $PRD        -> Used     = 1                                                ;
+  $PRD        -> GetUuid                  ( $DB , $PRDTAB                  ) ;
+  $UUID        = $PRD -> Uuid                                                ;
+  $PRD        -> Realm    = 0                                                ;
+  $PRD        -> Role     = 0                                                ;
+  $PRD        -> Item     = 196833                                           ;
+  $PRD        -> States   = 1                                                ;
+  $PRD        -> Creation = $NOW -> Stardate                                 ;
+  $PRD        -> Modified = $NOW -> Stardate                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SXSTART     = substr                   ( $START , 0 , 19                ) ;
+  $SXEND       = substr                   ( $END   , 0 , 19                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW        -> fromInput                ( $SXSTART , $TZ                 ) ;
+  $PRD        -> Start    = $NOW -> Stardate                                 ;
+  $NOW        -> fromInput                ( $SXEND   , $TZ                 ) ;
+  $PRD        -> End      = $NOW -> Stardate                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRD        -> UpdateColumns            ( $DB , $PRDTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NAME       -> Uuid      = $UUID                                           ;
+  $NAME       -> Locality  = 1002                                            ;
+  $NAME       -> Priority  = 0                                               ;
+  $NAME       -> Relevance = 0                                               ;
+  $NAME       -> Flags     = 0                                               ;
+  $NAME       -> Utf8      = mb_strlen    ( $TITLE , 'UTF-8'               ) ;
+  $NAME       -> Length    = strlen       ( $TITLE                         ) ;
+  $NAME       -> Name      = $TITLE                                          ;
+  $NAME       -> Assure                   ( $DB , $NAMTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOTE       -> setOwner                 ( $UUID , "Description"          ) ;
+  $NOTE       -> Prefer    = 0                                               ;
+  $NOTE       -> Note      = $DESCRIPTION                                    ;
+  $NOTE       -> assureNote               ( $DB , $NOXTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $POSTING       = array                                                     (
+    "Action"     => "Update"                                                 ,
+    "UUID"       => "{$UUID}"                                                ,
+    "CalendarId" => "{$CID}"                                                 ,
+    "Append"     => "Yes"                                                    ,
+  )                                                                          ;
+  self::SendRPC ( $RPC , "Events" , $POSTING , $Options )                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AitkCalendarEventAppending |-
+//////////////////////////////////////////////////////////////////////////////
+// +| AitkCalendarEventUpdating |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkCalendarEventUpdating                             (
+                         $DB                                                 ,
+                         $PICKDB                                             ,
+                         $HH                                                 ,
+                         $AA                                                 ,
+                         $Options                                          ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = $HH -> Parameter         ( "Database"                     ) ;
+  $TZ          = $HH -> Parameter         ( "TimeZone"                     ) ;
+  $RPC         = $HH -> Parameter         ( "RPC"                          ) ;
+  $CID         = $HH -> Parameter         ( "CalendarId"                   ) ;
+  $UUID        = $HH -> Parameter         ( "Uuid"                         ) ;
+  $START       = $HH -> Parameter         ( "Start"                        ) ;
+  $END         = $HH -> Parameter         ( "End"                          ) ;
+  $TITLE       = $HH -> Parameter         ( "Title"                        ) ;
+  $DESCRIPTION = $HH -> Parameter         ( "Description"                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRDTAB      = "`periods`"                                                 ;
+  $NAMTAB      = "`names_others`"                                            ;
+  $NOXTAB      = "`notes`"                                                   ;
+  $VARTAB      = "`variables`"                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW         = new StarDate             (                                ) ;
+  $PRD         = new Periode              (                                ) ;
+  $NAME        = new Name                 (                                ) ;
+  $NOTE        = new Note                 (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRD  -> Uuid     = $UUID                                                  ;
+  $PRD  -> ObtainsByUuid                  ( $DB , $PRDTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SXSTART     = substr                   ( $START , 0 , 19                ) ;
+  $SXEND       = substr                   ( $END   , 0 , 19                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW        -> fromInput                ( $SXSTART , $TZ                 ) ;
+  $PRD        -> Start    = $NOW -> Stardate                                 ;
+  $NOW        -> fromInput                ( $SXEND   , $TZ                 ) ;
+  $PRD        -> End      = $NOW -> Stardate                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRD        -> UpdateColumns            ( $DB , $PRDTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NAME       -> Uuid      = $UUID                                           ;
+  $NAME       -> Locality  = 1002                                            ;
+  $NAME       -> Priority  = 0                                               ;
+  $NAME       -> Relevance = 0                                               ;
+  $NAME       -> Flags     = 0                                               ;
+  $NAME       -> Utf8      = mb_strlen    ( $TITLE , 'UTF-8'               ) ;
+  $NAME       -> Length    = strlen       ( $TITLE                         ) ;
+  $NAME       -> Name      = $TITLE                                          ;
+  $NAME       -> Assure                   ( $DB , $NAMTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOTE       -> setOwner                 ( $UUID , "Description"          ) ;
+  $NOTE       -> Prefer    = 0                                               ;
+  $NOTE       -> Note      = $DESCRIPTION                                    ;
+  $NOTE       -> assureNote               ( $DB , $NOXTAB                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $POSTING       = array                                                     (
+    "Action"     => "Update"                                                 ,
+    "UUID"       => "{$UUID}"                                                ,
+    "CalendarId" => "{$CID}"                                                 ,
+    "Append"     => "No"                                                     ,
+  )                                                                          ;
+  self::SendRPC ( $RPC , "Events" , $POSTING , $Options )                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AitkCalendarEventUpdating |-
+//////////////////////////////////////////////////////////////////////////////
+// +| AitkCalendarEventEditor |+
+//////////////////////////////////////////////////////////////////////////////
+public static function AitkCalendarEventEditor                               (
+                         $DB                                                 ,
+                         $PICKDB                                             ,
+                         $HH                                                 ,
+                         $AA                                                 ,
+                         $Options                                          ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $DBX         = $HH -> Parameter         ( "Database"                     ) ;
+  $ACTION      = $HH -> Parameter         ( "Action"                       ) ;
+  $TZ          = $HH -> Parameter         ( "TimeZone"                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Templates   = $Options                 [ "Templates"                    ] ;
+  $EXTENSION   = $Options                 [ "AITK"                         ] ;
+  $PATHX       = $Options                 [ "Extension"                    ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TEMPLFILE   = $Templates               [ "Calendar::EventEditor"        ] ;
+  $TEMPLFILE   = "{$PATHX}/{$TEMPLFILE}"                                     ;
+  $FC          = file_get_contents        ( $TEMPLFILE                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PRDTAB      = "`periods`"                                                 ;
+  $NAMTAB      = "`names_others`"                                            ;
+  $NOXTAB      = "`notes`"                                                   ;
+  $VARTAB      = "`variables`"                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW         = new StarDate             (                                ) ;
+  $PRD         = new Periode              (                                ) ;
+  $NOX         = new Note                 (                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  switch                                  ( $ACTION                        ) {
+    case "Append"                                                            :
+      $START   = $HH -> Parameter         ( "Start"                        ) ;
+      $END     = $HH -> Parameter         ( "End"                          ) ;
+      $SXSTART = substr                   ( $START , 0 , 19                ) ;
+      $SXEND   = substr                   ( $END   , 0 , 19                ) ;
+      $FC      = str_replace ( "$(DISPLAY-UPDATE)","display: none;",$FC    ) ;
+      $FC      = str_replace ( "$(DISPLAY-APPEND)",""              ,$FC    ) ;
+      $FC      = str_replace ( "$(CALENDAR-UUID)" ,""              ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-TITLE)",""                 ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DESCRIPTION)",""           ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DATETIME-START)",$SXSTART  ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DATETIME-END)"  ,$SXEND    ,$FC    ) ;
+      $MSG     = $FC                                                         ;
+    break                                                                    ;
+    case "Update"                                                            :
+      $UUID    = $HH -> Parameter         ( "Uuid"                         ) ;
+      $START   = $HH -> Parameter         ( "Start"                        ) ;
+      $END     = $HH -> Parameter         ( "End"                          ) ;
+      ////////////////////////////////////////////////////////////////////////
+      $SXSTART = substr                   ( $START , 0 , 19                ) ;
+      $SXEND   = substr                   ( $END   , 0 , 19                ) ;
+      ////////////////////////////////////////////////////////////////////////
+      $PRD -> Uuid    = $UUID                                                ;
+      $PRD -> ObtainsByUuid  ( $DB , $PRDTAB                               ) ;
+      $TITLE   = $DB  -> Naming ( $NAMTAB , $UUID , 1002 , "Default" )       ;
+      $NOX    -> setOwner       ( $UUID , "Description"              )       ;
+      $NOX    -> Obtains        ( $DB , $NOXTAB , 0                  )       ;
+      $NOTE    = $NOX -> Note                                                ;
+      $FC      = str_replace ( "$(DISPLAY-UPDATE)","" , $FC                ) ;
+      $FC      = str_replace ( "$(DISPLAY-APPEND)","display: none;",$FC    ) ;
+      $FC      = str_replace ( "$(CALENDAR-UUID)" ,$UUID           ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-TITLE)",$TITLE             ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DESCRIPTION)",$NOTE        ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DATETIME-START)",$SXSTART  ,$FC    ) ;
+      $FC      = str_replace ( "$(EVENT-DATETIME-END)"  ,$SXEND    ,$FC    ) ;
+      $MSG     = $FC                                                         ;
+    break                                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Message" ] = $MSG                                                   ;
+  $AA [ "Answer"  ] = "Yes"                                                  ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $AA                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+// -| AitkCalendarEventEditor |-
 //////////////////////////////////////////////////////////////////////////////
 // +| FetchCalendarEvent |+
 // 抓取行事曆事件
@@ -5410,6 +5640,7 @@ public static function FetchCalendarEvent ( $DB , $PUID , $JSOX , $Options ) {
   $VARTAB         = "`variables`"                                            ;
   ////////////////////////////////////////////////////////////////////////////
   $J              = array                 (                                ) ;
+  $NOW            = new StarDate          (                                ) ;
   $PRD            = new Periode           (                                ) ;
   ////////////////////////////////////////////////////////////////////////////
   $PRD -> Uuid    = $PUID                                                    ;
@@ -5422,15 +5653,33 @@ public static function FetchCalendarEvent ( $DB , $PUID , $JSOX , $Options ) {
   $SKK            = $PRD -> toTimeString ( $TZ , "start" )                   ;
   $EKK            = $PRD -> toTimeString ( $TZ , "end"   )                   ;
   ////////////////////////////////////////////////////////////////////////////
-  $J [ "id"               ]  = $PUID                                         ;
-  $J [ "title"            ]  = $TITLE                                        ;
-  $J [ "start"            ]  = $SKK                                          ;
-  $J [ "end"              ]  = $EKK                                          ;
-  $J [ "editable"         ]  = true                                          ;
-  $J [ "allDay"           ]  = false                                         ;
+  $J [ "id"       ]  = $PUID                                                 ;
+  $J [ "title"    ]  = $TITLE                                                ;
+  $J [ "start"    ]  = $SKK                                                  ;
+  $J [ "end"      ]  = $EKK                                                  ;
+  $J [ "editable" ]  = true                                                  ;
+  $J [ "allDay"   ]  = false                                                 ;
   ////////////////////////////////////////////////////////////////////////////
-  $J [ "type"             ]  = $PRD -> Type                                  ;
-  $J [ "uuid"             ]  = $PRD -> Uuid                                  ;
+  $J [ "uuid"     ]  = $PRD -> Uuid                                          ;
+  $J [ "type"     ]  = $PRD -> Type                                          ;
+  $J [ "used"     ]  = $PRD -> Used                                          ;
+  $J [ "begin"    ]  = $PRD -> Start                                         ;
+  $J [ "finish"   ]  = $PRD -> End                                           ;
+  $J [ "realm"    ]  = $PRD -> Realm                                         ;
+  $J [ "role"     ]  = $PRD -> Role                                          ;
+  $J [ "item"     ]  = $PRD -> Item                                          ;
+  $J [ "states"   ]  = $PRD -> States                                        ;
+  $J [ "creation" ]  = $PRD -> Creation                                      ;
+  $J [ "modified" ]  = $PRD -> Modified                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $NOW -> Stardate = $PRD -> Start                                           ;
+  $J [ "beginTimestamp"    ]  = $NOW -> Timestamp ( )                        ;
+  $NOW -> Stardate = $PRD -> End                                             ;
+  $J [ "endTimestamp"      ]  = $NOW -> Timestamp ( )                        ;
+  $NOW -> Stardate = $PRD -> Creation                                        ;
+  $J [ "creationTimestamp" ]  = $NOW -> Timestamp ( )                        ;
+  $NOW -> Stardate = $PRD -> Modified                                        ;
+  $J [ "modifiedTimestamp" ]  = $NOW -> Timestamp ( )                        ;
   ////////////////////////////////////////////////////////////////////////////
   return json_encode ( $J )                                                  ;
 }
