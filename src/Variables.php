@@ -1,10 +1,9 @@
 <?php
-
-namespace AITK ;
-
-class Variables extends Columns
-{
-
+//////////////////////////////////////////////////////////////////////////////
+namespace AITK                                                               ;
+//////////////////////////////////////////////////////////////////////////////
+class Variables extends Columns                                              {
+//////////////////////////////////////////////////////////////////////////////
 public $Id      ;
 public $Uuid    ;
 public $Name    ;
@@ -14,7 +13,7 @@ public $Title   ;
 public $Comment ;
 public $Extra   ;
 public $Update  ;
-
+//////////////////////////////////////////////////////////////////////////////
 function __construct()
 {
   $this -> clear ( )  ;
@@ -336,7 +335,7 @@ public function assureNote ( $DB , $TABLE )
   $DB   -> Query           ( $DS          ) ;
   $this -> Insert          ( $DB , $TABLE ) ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function appendNote($DB,$TABLE)
 {
   $this -> Prefer = -1                                   ;
@@ -352,7 +351,7 @@ public function appendNote($DB,$TABLE)
   $this -> Prefer = $this -> Prefer + 1                  ;
   $this -> Insert ( $DB , $TABLE )                       ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Editing($DB,$TABLE)
 {
   if ( $this -> Prefer < 0 )                      {
@@ -367,7 +366,7 @@ public function Editing($DB,$TABLE)
     }                                             ;
   }                                               ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Ordering($DB,$TABLE,$IDs)
 {
   if ( count ( $IDs ) <= 0 ) return false           ;
@@ -380,16 +379,14 @@ public function Ordering($DB,$TABLE,$IDs)
     $CC  = $CC + 1                                  ;
   }                                                 ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Organize($DB,$TABLE)
 {
   $IDs = $this -> ObtainIDs ( $DB , $TABLE        ) ;
   $this        -> Ordering  ( $DB , $TABLE , $IDs ) ;
   unset                     (                $IDs ) ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
 }
-
 //////////////////////////////////////////////////////////////////////////////
 ?>

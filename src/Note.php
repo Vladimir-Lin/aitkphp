@@ -1,43 +1,39 @@
 <?php
-
-namespace AITK ;
-
-class Note extends Columns
-{
-
-public $Id      ;
-public $Uuid    ;
-public $Name    ;
-public $Prefer  ;
-public $Note    ;
-public $Title   ;
-public $Comment ;
-public $Extra   ;
-public $Update  ;
-
-function __construct()
-{
-  $this -> clear ( )  ;
+//////////////////////////////////////////////////////////////////////////////
+namespace AITK                                                               ;
+//////////////////////////////////////////////////////////////////////////////
+class Note extends Columns                                                   {
+//////////////////////////////////////////////////////////////////////////////
+public $Id                                                                   ;
+public $Uuid                                                                 ;
+public $Name                                                                 ;
+public $Prefer                                                               ;
+public $Note                                                                 ;
+public $Title                                                                ;
+public $Comment                                                              ;
+public $Extra                                                                ;
+public $Update                                                               ;
+//////////////////////////////////////////////////////////////////////////////
+function __construct ( )                                                     {
+  $this -> clear     ( )                                                     ;
 }
-
-function __destruct()
-{
-  unset ( $this -> Columns ) ;
+//////////////////////////////////////////////////////////////////////////////
+function __destruct (                                                      ) {
+  unset             ( $this -> Columns                                     ) ;
 }
-
-public function clear()
-{
-  $this -> Id      = 0  ;
-  $this -> Uuid    = 0  ;
-  $this -> Name    = "" ;
-  $this -> Prefer  = 0  ;
-  $this -> Note    = "" ;
-  $this -> Title   = "" ;
-  $this -> Comment = "" ;
-  $this -> Extra   = "" ;
-  $this -> Update  = 0  ;
+//////////////////////////////////////////////////////////////////////////////
+public function clear ( )                                                    {
+  $this -> Id      = 0                                                       ;
+  $this -> Uuid    = 0                                                       ;
+  $this -> Name    = ""                                                      ;
+  $this -> Prefer  = 0                                                       ;
+  $this -> Note    = ""                                                      ;
+  $this -> Title   = ""                                                      ;
+  $this -> Comment = ""                                                      ;
+  $this -> Extra   = ""                                                      ;
+  $this -> Update  = 0                                                       ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function assign($Item)
 {
   $this -> Id      = $Item -> Id      ;
@@ -50,7 +46,7 @@ public function assign($Item)
   $this -> Extra   = $Item -> Extra   ;
   $this -> Update  = $Item -> Update  ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function tableItems()
 {
   $S = array (                ) ;
@@ -65,7 +61,7 @@ public function tableItems()
   array_push ( $S , "ltime"   ) ;
   return $S                     ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Items( $S = "," )
 {
   $X = $this -> tableItems (         ) ;
@@ -73,7 +69,7 @@ public function Items( $S = "," )
   unset                    ( $X      ) ;
   return $L                            ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function set($item,$V)
 {
   $a = strtolower ( $item )                    ;
@@ -87,7 +83,7 @@ public function set($item,$V)
   if ( "extra"   == $a ) $this -> Extra   = $V ;
   if ( "ltime"   == $a ) $this -> Update  = $V ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function get($item)
 {
   $a = strtolower ( $item )                      ;
@@ -102,9 +98,7 @@ public function get($item)
   if ( "ltime"   == $a ) return $this -> Update  ;
   return ""                                      ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
-
 public function ItemPair($item)
 {
   $a = strtolower ( $item )                               ;
@@ -137,14 +131,12 @@ public function ItemPair($item)
   }                                                       ;
   return ""                                               ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Pair($item)
 {
   return "`" . $item . "` = " . $this -> get ( $item ) ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
-
 public function Pairs($Items)
 {
   $P = array ( )                                ;
@@ -155,21 +147,17 @@ public function Pairs($Items)
   unset        ( $P         )                   ;
   return $Q                                     ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
-
 public function setOwner($UUID,$NAME)
 {
   $this -> Uuid = $UUID ;
   $this -> Name = $NAME ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
-
 public function WhereClause($PREFER="")
 {
   $W = ""                                            ;
-  if ( strlen ( $PREFER ) >= 0 )                     {
+  if ( strlen ( $PREFER ) > 0 )                      {
     $W =  " where `uuid` = "  . $this -> Uuid        .
             " and `name` = '" . $this -> Name . "'"  .
           " and `prefer` = "  . $PREFER       . " ;" ;
@@ -180,19 +168,19 @@ public function WhereClause($PREFER="")
   }                                                  ;
   return $W                                          ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Select($TABLE,$PREFER="")
 {
   return "select `note` from " . $TABLE   .
          $this -> WhereClause ( $PREFER ) ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Delete($TABLE)
 {
   return "delete from {$TABLE}"                   .
          $this -> WhereClause ( $this -> Prefer ) ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Insert($DB,$TABLE)
 {
   $CUID   = $this -> Uuid                               ;
@@ -208,7 +196,7 @@ public function Insert($DB,$TABLE)
   $qq    -> close          (             )              ;
   return $rt                                            ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function UpdateNote($DB,$TABLE)
 {
   $CUID   = $this -> Uuid                     ;
@@ -225,7 +213,7 @@ public function UpdateNote($DB,$TABLE)
   $qq    -> close          (             )    ;
   return $rt                                  ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function UpdateColumn($DB,$TABLE,$COLUMN,$VALUE)
 {
   $CUID   = $this -> Uuid                          ;
@@ -241,7 +229,7 @@ public function UpdateColumn($DB,$TABLE,$COLUMN,$VALUE)
   $qq    -> close          (              )        ;
   return $rt                                       ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Obtains($DB,$TABLE,$PREFER="")
 {
   $this -> Note = ""                                   ;
@@ -253,7 +241,7 @@ public function Obtains($DB,$TABLE,$PREFER="")
   }                                                    ;
   return $this -> Note                                 ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function ObtainsAll($DB,$TABLE,$PREFER="")
 {
   $this -> Note      = ""                                                ;
@@ -272,13 +260,13 @@ public function ObtainsAll($DB,$TABLE,$PREFER="")
   }                                                                      ;
   return $this -> Note                                                   ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function ObtainByOwner($DB,$TABLE,$UUID,$NAME,$PREFER="")
 {
   $this -> setOwner       ( $UUID , $NAME          ) ;
   return $this -> Obtains ( $DB , $TABLE , $PREFER ) ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function ObtainIDs($DB,$TABLE,$ITEM="id",$ORDER="asc")
 {
   $IDs = array ( )                                     ;
@@ -294,7 +282,7 @@ public function ObtainIDs($DB,$TABLE,$ITEM="id",$ORDER="asc")
   }                                                    ;
   return $IDs                                          ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function ObtainStrings($DB,$TABLE,$ORDER="asc")
 {
   $IDs = array ( )                                     ;
@@ -310,7 +298,7 @@ public function ObtainStrings($DB,$TABLE,$ORDER="asc")
   }                                                    ;
   return $IDs                                          ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function ObtainMaps($DB,$TABLE,$ORDER="asc")
 {
   $IDs = array ( )                                     ;
@@ -328,7 +316,7 @@ public function ObtainMaps($DB,$TABLE,$ORDER="asc")
   }                                                    ;
   return $IDs                                          ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function assureNote ( $DB , $TABLE )
 {
   $this -> Prefer = 0                       ;
@@ -336,7 +324,7 @@ public function assureNote ( $DB , $TABLE )
   $DB   -> Query           ( $DS          ) ;
   $this -> Insert          ( $DB , $TABLE ) ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function appendNote($DB,$TABLE)
 {
   $this -> Prefer = -1                                   ;
@@ -352,7 +340,7 @@ public function appendNote($DB,$TABLE)
   $this -> Prefer = $this -> Prefer + 1                  ;
   $this -> Insert ( $DB , $TABLE )                       ;
 }
-
+//////////////////////////////////////////////////////////////////////////////
 public function Editing($DB,$TABLE)
 {
   if ( $this -> Prefer < 0 )                      {
@@ -367,29 +355,25 @@ public function Editing($DB,$TABLE)
     }                                             ;
   }                                               ;
 }
-
-public function Ordering($DB,$TABLE,$IDs)
-{
-  if ( count ( $IDs ) <= 0 ) return false           ;
-  $CC  = 0                                          ;
-  foreach ( $IDs as $id )                           {
-    $QQ  = "update " . $TABLE                       .
-           " set `prefer` = " . (string) $CC        .
-             " where `id` = " . (string) $id . " ;" ;
-    $DB -> Query ( $QQ )                            ;
-    $CC  = $CC + 1                                  ;
-  }                                                 ;
+//////////////////////////////////////////////////////////////////////////////
+public function Ordering ( $DB , $TABLE , $IDs                             ) {
+  if ( count ( $IDs ) <= 0 ) return false                                    ;
+  $CC  = 0                                                                   ;
+  foreach ( $IDs as $id )                                                    {
+    $QQ  = "update " . $TABLE                                                .
+           " set `prefer` = " . (string) $CC                                 .
+             " where `id` = " . (string) $id . " ;"                          ;
+    $DB -> Query ( $QQ )                                                     ;
+    $CC  = $CC + 1                                                           ;
+  }                                                                          ;
 }
-
-public function Organize($DB,$TABLE)
-{
-  $IDs = $this -> ObtainIDs ( $DB , $TABLE        ) ;
-  $this        -> Ordering  ( $DB , $TABLE , $IDs ) ;
-  unset                     (                $IDs ) ;
+//////////////////////////////////////////////////////////////////////////////
+public function Organize    ( $DB , $TABLE                                 ) {
+  $IDs = $this -> ObtainIDs ( $DB , $TABLE                                 ) ;
+  $this        -> Ordering  ( $DB , $TABLE , $IDs                          ) ;
+  unset                     (                $IDs                          ) ;
 }
-
 //////////////////////////////////////////////////////////////////////////////
 }
-
 //////////////////////////////////////////////////////////////////////////////
 ?>

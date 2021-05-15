@@ -62,6 +62,25 @@ public function ConnectionError ( )
 
 //////////////////////////////////////////////////////////////////////////////
 
+public function TryingConnect ( $Host , $AA                                ) {
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( $this -> Connect ( $Host )                 ) {
+    return true                                                              ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $AA [ "Answer"  ] = "No"                                                   ;
+  $AA [ "Error"   ] = $DB -> ConnectionError ( )                             ;
+  $AA [ "Problem" ] = $Translations [ "SQL::Lost" ]                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $RJ = json_encode           ( $AA                                        ) ;
+  header                      ( "Content-Type: application/json"           ) ;
+  echo                          $RJ                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return false                                                               ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 public function Query ( $CMD )
 {
   if ( is_a ( $this -> SQL , "mysqli" ) ) {
