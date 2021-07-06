@@ -4,26 +4,25 @@
 //////////////////////////////////////////////////////////////////////////////
 namespace AITK                                                               ;
 //////////////////////////////////////////////////////////////////////////////
-class TLD extends Columns                                                    {
-//////////////////////////////////////////////////////////////////////////////
-// +| Variables |+ Begin - 2020-08-08T06:55:28
+class WebPage extends Columns                                                {
 //////////////////////////////////////////////////////////////////////////////
 public $Id                                                                   ;
 public $Uuid                                                                 ;
 public $Used                                                                 ;
-public $Type                                                                 ;
-public $Owner                                                                ;
+public $URL                                                                  ;
 public $Name                                                                 ;
 public $Reverse                                                              ;
-public $IANA                                                                 ;
-public $Explain                                                              ;
-public $SLD                                                                  ;
-public $Domains                                                              ;
-public $Hosts                                                                ;
-public $Pages                                                                ;
+public $Path                                                                 ;
 public $Update                                                               ;
-//////////////////////////////////////////////////////////////////////////////
-// -| Variables |- Final - 2020-08-08T06:55:28
+public $Protocol                                                             ;
+public $Port                                                                 ;
+public $Hostname                                                             ;
+public $TLD                                                                  ;
+public $SLD                                                                  ;
+public $DomainUuid                                                           ;
+public $HostUuid                                                             ;
+public $UrlUuid                                                              ;
+public $Tables                                                               ;
 //////////////////////////////////////////////////////////////////////////////
 function __construct  ( )                                                    {
   parent::__construct ( )                                                    ;
@@ -37,20 +36,26 @@ function __destruct  ( )                                                     {
 // +| clear |+ Begin - 2020-08-08T06:22:01
 //////////////////////////////////////////////////////////////////////////////
 public function clear ( )                                                    {
-  $this -> Id      = 0                                                       ;
-  $this -> Uuid    = 0                                                       ;
-  $this -> Used    = 1                                                       ;
-  $this -> Type    = 0                                                       ;
-  $this -> Owner   = 0                                                       ;
-  $this -> Name    = ""                                                      ;
-  $this -> Reverse = ""                                                      ;
-  $this -> IANA    = ""                                                      ;
-  $this -> Explain = ""                                                      ;
-  $this -> SLD     = 0                                                       ;
-  $this -> Domains = 0                                                       ;
-  $this -> Hosts   = 0                                                       ;
-  $this -> Pages   = 0                                                       ;
-  $this -> Update  = ""                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Id         = 0                                                    ;
+  $this -> Uuid       = 0                                                    ;
+  $this -> Used       = 1                                                    ;
+  $this -> URL        = 0                                                    ;
+  $this -> Name       = ""                                                   ;
+  $this -> Reverse    = ""                                                   ;
+  $this -> Path       = ""                                                   ;
+  $this -> Update     = ""                                                   ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Protocol   = "http"                                               ;
+  $this -> Port       = 80                                                   ;
+  $this -> Hostname   = ""                                                   ;
+  $this -> TLD        = 0                                                    ;
+  $this -> SLD        = 0                                                    ;
+  $this -> DomainUuid = 0                                                    ;
+  $this -> HostUuid   = 0                                                    ;
+  $this -> UrlUuid    = 0                                                    ;
+  $this -> Tables     = array ( )                                            ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 // -| clear |- Final - 2020-08-08T06:22:01
@@ -61,16 +66,10 @@ public function assign ( $Item )                                             {
   $this -> Id      = $Item -> Id                                             ;
   $this -> Uuid    = $Item -> Uuid                                           ;
   $this -> Used    = $Item -> Used                                           ;
-  $this -> Type    = $Item -> Type                                           ;
-  $this -> Owner   = $Item -> Owner                                          ;
+  $this -> URL     = $Item -> URL                                            ;
   $this -> Name    = $Item -> Name                                           ;
   $this -> Reverse = $Item -> Reverse                                        ;
-  $this -> IANA    = $Item -> IANA                                           ;
-  $this -> Explain = $Item -> Explain                                        ;
-  $this -> SLD     = $Item -> SLD                                            ;
-  $this -> Domains = $Item -> Domains                                        ;
-  $this -> Hosts   = $Item -> Hosts                                          ;
-  $this -> Pages   = $Item -> Pages                                          ;
+  $this -> Path    = $Item -> Path                                           ;
   $this -> Update  = $Item -> Update                                         ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -83,16 +82,10 @@ public function tableItems ( )                                               {
     "id"                                                                     ,
     "uuid"                                                                   ,
     "used"                                                                   ,
-    "type"                                                                   ,
-    "owner"                                                                  ,
+    "url"                                                                    ,
     "name"                                                                   ,
     "reverse"                                                                ,
-    "iana"                                                                   ,
-    "explain"                                                                ,
-    "sld"                                                                    ,
-    "domains"                                                                ,
-    "hosts"                                                                  ,
-    "pages"                                                                  ,
+    "path"                                                                   ,
     "ltime"                                                                  ,
   ]                                                                          ;
 }
@@ -134,16 +127,10 @@ public function Items      ( $S = ","                                      ) {
 public function valueItems ( )                                               {
   return                                                                     [
     "used"                                                                   ,
-    "type"                                                                   ,
-    "owner"                                                                  ,
+    "url"                                                                    ,
     "name"                                                                   ,
     "reverse"                                                                ,
-    "iana"                                                                   ,
-    "explain"                                                                ,
-    "sld"                                                                    ,
-    "domains"                                                                ,
-    "hosts"                                                                  ,
-    "pages"                                                                  ,
+    "path"                                                                   ,
   ]                                                                          ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -158,16 +145,10 @@ public function set ( $item , $V )                                           {
   if ( "id"      == $a ) $this -> Id      = $V                               ;
   if ( "uuid"    == $a ) $this -> Uuid    = $V                               ;
   if ( "used"    == $a ) $this -> Used    = $V                               ;
-  if ( "type"    == $a ) $this -> Type    = $V                               ;
-  if ( "owner"   == $a ) $this -> Owner   = $V                               ;
+  if ( "url"     == $a ) $this -> URL     = $V                               ;
   if ( "name"    == $a ) $this -> Name    = $V                               ;
   if ( "reverse" == $a ) $this -> Reverse = $V                               ;
-  if ( "iana"    == $a ) $this -> IANA    = $V                               ;
-  if ( "explain" == $a ) $this -> Explain = $V                               ;
-  if ( "sld"     == $a ) $this -> SLD     = $V                               ;
-  if ( "domains" == $a ) $this -> Domains = $V                               ;
-  if ( "hosts"   == $a ) $this -> Hosts   = $V                               ;
-  if ( "pages"   == $a ) $this -> Pages   = $V                               ;
+  if ( "path"    == $a ) $this -> Path    = $V                               ;
   if ( "ltime"   == $a ) $this -> Update  = $V                               ;
   ////////////////////////////////////////////////////////////////////////////
 }
@@ -181,16 +162,10 @@ public function get ( $item )                                                {
   if ( "id"      == $a ) return (string) $this -> Id                         ;
   if ( "uuid"    == $a ) return (string) $this -> Uuid                       ;
   if ( "used"    == $a ) return (string) $this -> Used                       ;
-  if ( "type"    == $a ) return (string) $this -> Type                       ;
-  if ( "owner"   == $a ) return (string) $this -> Owner                      ;
+  if ( "url"     == $a ) return (string) $this -> URL                        ;
   if ( "name"    == $a ) return (string) $this -> Name                       ;
   if ( "reverse" == $a ) return (string) $this -> Reverse                    ;
-  if ( "iana"    == $a ) return (string) $this -> IANA                       ;
-  if ( "explain" == $a ) return (string) $this -> Explain                    ;
-  if ( "sld"     == $a ) return (string) $this -> SLD                        ;
-  if ( "domains" == $a ) return (string) $this -> Domains                    ;
-  if ( "hosts"   == $a ) return (string) $this -> Hosts                      ;
-  if ( "pages"   == $a ) return (string) $this -> Pages                      ;
+  if ( "path"    == $a ) return (string) $this -> Path                       ;
   if ( "ltime"   == $a ) return (string) $this -> Update                     ;
   return ""                                                                  ;
 }
@@ -232,11 +207,8 @@ public function ItemPair ( $item )                                           {
   if ( "used"      == $a )                                                   {
     return "`{$a}` = " . (string) $this -> Used                              ;
   }                                                                          ;
-  if ( "type"      == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Type                              ;
-  }                                                                          ;
-  if ( "owner"     == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Owner                             ;
+  if ( "url"       == $a )                                                   {
+    return "`{$a}` = " . (string) $this -> URL                               ;
   }                                                                          ;
   if ( "name"      == $a )                                                   {
     return "`{$a}` = " . (string) $this -> Name                              ;
@@ -244,23 +216,8 @@ public function ItemPair ( $item )                                           {
   if ( "reverse"   == $a )                                                   {
     return "`{$a}` = " . (string) $this -> Reverse                           ;
   }                                                                          ;
-  if ( "iana"      == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> IANA                              ;
-  }                                                                          ;
-  if ( "explain"   == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Explain                           ;
-  }                                                                          ;
-  if ( "sld"       == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> SLD                               ;
-  }                                                                          ;
-  if ( "domains"   == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Domains                           ;
-  }                                                                          ;
-  if ( "hosts"     == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Hosts                             ;
-  }                                                                          ;
-  if ( "pages"     == $a )                                                   {
-    return "`{$a}` = " . (string) $this -> Pages                             ;
+  if ( "path"      == $a )                                                   {
+    return "`{$a}` = " . (string) $this -> Path                              ;
   }                                                                          ;
   if ( "ltime"     == $a )                                                   {
     return "`{$a}` = " . (string) $this -> Update                            ;
@@ -277,16 +234,10 @@ public function obtain ( $R )                                                {
   $this -> Id      = $R [ "id"      ]                                        ;
   $this -> Uuid    = $R [ "uuid"    ]                                        ;
   $this -> Used    = $R [ "used"    ]                                        ;
-  $this -> Type    = $R [ "type"    ]                                        ;
-  $this -> Owner   = $R [ "owner"   ]                                        ;
+  $this -> URL     = $R [ "url"     ]                                        ;
   $this -> Name    = $R [ "name"    ]                                        ;
   $this -> Reverse = $R [ "reverse" ]                                        ;
-  $this -> IANA    = $R [ "iana"    ]                                        ;
-  $this -> Explain = $R [ "explain" ]                                        ;
-  $this -> SLD     = $R [ "sld"     ]                                        ;
-  $this -> Domains = $R [ "domains" ]                                        ;
-  $this -> Hosts   = $R [ "hosts"   ]                                        ;
-  $this -> Pages   = $R [ "pages"   ]                                        ;
+  $this -> Path    = $R [ "path"    ]                                        ;
   $this -> Update  = $R [ "ltime"   ]                                        ;
   ////////////////////////////////////////////////////////////////////////////
 }
@@ -314,14 +265,430 @@ public function ObtainsByUuid ( $DB , $TABLE                               ) {
 //////////////////////////////////////////////////////////////////////////////
 // -| ObtainsByUuid |- Final - 2020-08-08T06:15:54
 //////////////////////////////////////////////////////////////////////////////
-// +| isMatch |+
-//////////////////////////////////////////////////////////////////////////////
-public function isMatch       ( $tld                                       ) {
-  $T = strtolower             ( $tld                                       ) ;
-  return                      ( $this -> Name == $T                        ) ;
+public function setPage            ( $PAGE                                 ) {
+  ////////////////////////////////////////////////////////////////////////////
+  if                               ( strlen ( $PAGE ) <= 0                 ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R                  = parse_url  ( $PAGE                                 ) ;
+  if                               ( $R === false                          ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Name       = $PAGE                                                ;
+  $this -> Reverse    = strrev     ( $PAGE                                 ) ;
+  $this -> Path       = ""                                                   ;
+  $this -> Protocol   = $R         [ "scheme"                              ] ;
+  $this -> Port       = intval     ( $R [ "port" ] , 10                    ) ;
+  $this -> Hostname   = $R         [ "host"                                ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $ZPATH              = $R         [ "path"                                ] ;
+  $IDX                = strpos     ( $PAGE , $ZPATH                        ) ;
+  $ZPATH              = $PAGE                                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                               ( $IDX > 0                              ) {
+    //////////////////////////////////////////////////////////////////////////
+    $X                = $PAGE                                                ;
+    $ZPATH            = substr     ( $X , $IDX                             ) ;
+    $V                = substr     ( $X , 0    , $IDX                      ) ;
+    $F                = strtolower ( $V                                    ) ;
+    $this -> Name     = "{$F}{$ZPATH}"                                       ;
+    $this -> Reverse  = strrev     ( $this -> Name                         ) ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Path       = $ZPATH                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> DecidePort              (                                       ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return true                                                                ;
 }
 //////////////////////////////////////////////////////////////////////////////
-// -| isMatch |-
+public function DecidePort    (                                            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  switch                      ( $this -> Protocol                          ) {
+    case "http"                                                              :
+      $this -> Port =  80                                                    ;
+    break                                                                    ;
+    case "https"                                                             :
+      $this -> Port = 443                                                    ;
+    break                                                                    ;
+    case "ftp"                                                               :
+      $this -> Port =  21                                                    ;
+    break                                                                    ;
+    default                                                                  :
+      $this -> Port =   0                                                    ;
+    break                                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+public function isProtocol    (                                            ) {
+  return                      ( strlen ( $this -> Protocol )               ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForTLD    ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $H       = $this -> Hostname                                               ;
+  if                          ( strlen ( $H ) <= 0                         ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R       = strrev           ( $H                                         ) ;
+  $T       = explode          ( "." , $R                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( count ( $T ) <= 0                          ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $W       = $T               [ 0                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TLDTAB  = $this -> Tables  [ "TLD"                                      ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `id`,`type` from {$TLDTAB}"                             .
+             " where ( `reverse` = '{$W}' ) ;"                               ;
+  $qq      = $DB -> Query     ( $QQ                                        ) ;
+  if                          ( ! $DB -> hasResult ( $qq )                 ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $qq -> fetch_array ( MYSQLI_BOTH )                              ;
+  $ID      = $rr              [ 0                                          ] ;
+  $TYPE    = $rr              [ 1                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return array                ( "Id" => $ID , "Type" => $TYPE ,            ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForSLD    ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $H       = $this -> Hostname                                               ;
+  if                          ( strlen ( $H ) <= 0                         ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R       = strrev           ( $H                                         ) ;
+  $T       = explode          ( "." , $R                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( count ( $T ) <= 1                          ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $W       = $T               [ 0                                          ] ;
+  $X       = $T               [ 1                                          ] ;
+  $C       = "{$W}.{$X}"                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SLDTAB  = $this -> Tables  [ "SLD"                                      ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `id` from {$SLDTAB}"                                    .
+             " where ( `reverse` = '{$C}' ) ;"                               ;
+  $qq      = $DB -> Query     ( $QQ                                        ) ;
+  if                          ( ! $DB -> hasResult ( $qq )                 ) {
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $qq -> fetch_array ( MYSQLI_BOTH )                              ;
+  $ID      = $rr              [ 0                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $ID                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForDomain ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $CNT     = 2                                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( $this -> SLD > 0                           ) {
+    $CNT   = 3                                                               ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $H       = $this -> Hostname                                               ;
+  if                          ( strlen ( $H ) <= 0                         ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R       = strrev           ( $H                                         ) ;
+  $T       = explode          ( "." , $R                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( count ( $T ) <= $CNT                       ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Z       =                  [                                            ] ;
+  $LI      = 0                                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                     ( $T as $S                                   ) {
+    if                        ( $LI < $CNT                                 ) {
+      array_push              ( $Z , $S                                    ) ;
+    }                                                                        ;
+    $LI    = $LI + 1                                                         ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $W       = implode          ( "." , $Z                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DOMTAB  = $this -> Tables  [ "Domains"                                  ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `uuid` from {$DOMTAB}"                                  .
+             " where ( `reverse` = '{$W}' ) ;"                               ;
+  $qq      = $DB -> Query     ( $QQ                                        ) ;
+  if                          ( ! $DB -> hasResult ( $qq )                 ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $qq -> fetch_array ( MYSQLI_BOTH )                              ;
+  $DUID    = $rr              [ 0                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $DUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function AppendDomain  ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $CNT     = 2                                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( $this -> SLD > 0                           ) {
+    $CNT   = 3                                                               ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $H       = $this -> Hostname                                               ;
+  if                          ( strlen ( $H ) <= 0                         ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R       = strrev           ( $H                                         ) ;
+  $T       = explode          ( "." , $R                                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( count ( $T ) <= $CNT                       ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $Z       =                  [                                            ] ;
+  $LI      = 0                                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  foreach                     ( $T as $S                                   ) {
+    if                        ( $LI < $CNT                                 ) {
+      array_push              ( $Z , $S                                    ) ;
+    }                                                                        ;
+    $LI    = $LI + 1                                                         ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $W       = implode          ( "." , $Z                                   ) ;
+  $V       = strrev           ( $W                                         ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DOMTAB  = $this -> Tables  [ "Domains"                                  ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DUID    = $DB -> LastUuid  ( $DOMTAB , "uuid" , 8310000000000000000     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "insert into {$DOMTAB} ( `uuid`,`name` )"                       .
+             " values ( {$DUID} , ? ) ;"                                     ;
+  $qq      = $DB -> Prepare   ( $QQ                                        ) ;
+  $qq     -> bind_param       ( 's' , $V                                   ) ;
+  $qq     -> execute          (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $DUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForHost     ( $DB                                      ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HSTTAB  = $this -> Tables    [ "Hosts"                                  ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `uuid` from {$HSTTAB}"                                  .
+             " where ( `name` = ? ) ;"                                       ;
+  $qq      = $DB -> Prepare     ( $QQ                                      ) ;
+  $qq     -> bind_param         ( 's' , $this -> Hostname                  ) ;
+  $qq     -> execute            (                                          ) ;
+  $kk      = $qq -> get_result  (                                          ) ;
+  if                            ( ! $DB -> hasResult ( $kk )               ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $kk -> fetch_array ( MYSQLI_BOTH                              ) ;
+  $HUID    = $rr                [ 0                                        ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function AppendHost    ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HSTTAB  = $this -> Tables  [ "Hosts"                                    ] ;
+  $HUID    = $DB -> LastUuid  ( $HSTTAB , "uuid" , 8370000000000000000     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DUID    = $this -> DomainUuid                                             ;
+  $NAME    = $this -> Hostname                                               ;
+  $REVERSE = strrev           ( $NAME                                      ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "insert into {$HSTTAB}"                                         .
+             " ( `uuid`,`domain`,`name`,`reverse` )"                         .
+             " values ( {$HUID} , {$DUID} , ? , ? ) ;"                       ;
+  $qq      = $DB -> Prepare   ( $QQ                                        ) ;
+  $qq     -> bind_param       ( 'ss' , $NAME , $REVERSE                    ) ;
+  $qq     -> execute          (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $HUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForURL      ( $DB                                      ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $HUID     = $this -> HostUuid                                              ;
+  $PROTOCOL = $this -> Protocol                                              ;
+  $PORT     = $this -> Port                                                  ;
+  $HOST     = $this -> Hostname                                              ;
+  ////////////////////////////////////////////////////////////////////////////
+  $URLTAB   = $this -> Tables   [ "URLs"                                   ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ       = "select `uuid` from {$URLTAB}"                                 .
+              " where ( `host` = {$HUID} )"                                  .
+              " and ( `protocol` = ? )"                                      .
+              " and ( `port` = {$PORT} )"                                    .
+              " and ( `name` = ? ) ;"                                        ;
+  $qq       = $DB -> Prepare    ( $QQ                                      ) ;
+  $qq      -> bind_param        ( 's' , $PROTOCOL , $HOST                  ) ;
+  $qq      -> execute           (                                          ) ;
+  $kk       = $qq -> get_result (                                          ) ;
+  if                            ( ! $DB -> hasResult ( $kk )               ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $kk -> fetch_array ( MYSQLI_BOTH )                              ;
+  $UUID    = $rr              [ 0                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $UUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function AppendURL     ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $URLTAB   = $this -> Tables [ "URLs"                                     ] ;
+  $UUID     = $DB -> LastUuid ( $URLTAB , "uuid" , 8320000000000000000     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $HUID     = $this -> HostUuid                                              ;
+  $PROTOCOL = $this -> Protocol                                              ;
+  $PORT     = $this -> Port                                                  ;
+  $NAME     = $this -> Hostname                                              ;
+  $REVERSE  = strrev          ( $NAME                                      ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "insert into {$URLTAB}"                                         .
+             " ( `uuid` , `host` , `protocol` , `port` , `name` , `reverse` )" .
+             " values ( {$UUID} , {$HUID} , ? , {$PORT} , ? , ? ) ;"         ;
+  $qq      = $DB -> Prepare   ( $QQ                                        ) ;
+  $qq     -> bind_param       ( 'sss' , $PROTOCOL , $NAME , $REVERSE       ) ;
+  $qq     -> execute          (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $UUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function LookForPage   ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $WPGTAB  = $this -> Tables  [ "Webpages"                                 ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "select `uuid` from {$WPGTAB}"                                  .
+             " where ( `name` = ? ) ;"                                       ;
+  $qq      = $DB -> Prepare   ( $QQ                                        ) ;
+  $qq     -> bind_param       ( 's' , $this -> Name                        ) ;
+  $qq     -> execute          (                                            ) ;
+  $kk   = $qq -> get_result (                                              ) ;
+  if                          ( ! $DB -> hasResult ( $kk )                 ) {
+    return 0                                                                 ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $rr      = $kk -> fetch_array ( MYSQLI_BOTH )                              ;
+  $PUID    = $rr              [ 0                                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $PUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function AppendPage    ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $WPGTAB  = $this -> Tables  [ "Webpages"                                 ] ;
+  $UUID    = $DB -> LastUuid  ( $WPGTAB , "uuid" , 8380000000000000000     ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $URID    = $this -> UrlUuid                                                ;
+  $NAME    = $this -> Name                                                   ;
+  $REVERSE = $this -> Reverse                                                ;
+  $PATH    = $this -> Path                                                   ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ      = "insert into {$WPGTAB}"                                         .
+             " ( `uuid`,`url`,`name`,`reverse`,`path` )"                     .
+             " values ( {$UUID} , {$URID} , ? , ? , ? ) ;"                   ;
+  $qq      = $DB -> Prepare   ( $QQ                                        ) ;
+  $qq     -> bind_param       ( 'sss' , $NAME , $REVERSE , $PATH           ) ;
+  $qq     -> execute          (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $UUID                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Assure        ( $DB                                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $ANSWER         = false                                                    ;
+  $this -> Uuid   = $this -> LookForPage ( $DB )                             ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( gmp_cmp ( $this -> Uuid , 0 ) > 0          ) {
+    return true                                                              ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $TLDTAB         = $this -> Tables [ "TLD"                                ] ;
+  $SLDTAB         = $this -> Tables [ "SLD"                                ] ;
+  $DOMTAB         = $this -> Tables [ "Domains"                            ] ;
+  $HSTTAB         = $this -> Tables [ "Hosts"                              ] ;
+  $URLTAB         = $this -> Tables [ "URLs"                               ] ;
+  $WPGTAB         = $this -> Tables [ "Webpages"                           ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $DB -> LockWrites           ( [ $TLDTAB                                    ,
+                                  $SLDTAB                                    ,
+                                  $DOMTAB                                    ,
+                                  $HSTTAB                                    ,
+                                  $URLTAB                                    ,
+                                  $WPGTAB                              , ] ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $R              = $this -> LookForTLD ( $DB )                              ;
+  if                          ( $R != false                                ) {
+    //////////////////////////////////////////////////////////////////////////
+    $this   -> TLD = $R       [ "Id"                                       ] ;
+    if                        ( $R [ "Type" ] == 7                         ) {
+      $this -> SLD = $this -> LookForSLD ( $DB                             ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $D              = $this -> LookForDomain ( $DB )                           ;
+  if                          ( gmp_cmp ( $D , 0 ) > 0                     ) {
+    $this -> DomainUuid = $D                                                 ;
+  } else                                                                     {
+    $this -> DomainUuid = $this -> AppendDomain ( $DB )                      ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( gmp_cmp ( $this -> DomainUuid , 0 ) > 0    ) {
+    //////////////////////////////////////////////////////////////////////////
+    $H            = $this -> LookForHost ( $DB )                             ;
+    if                        ( gmp_cmp ( $H , 0 ) > 0                     ) {
+      $this -> HostUuid = $H                                                 ;
+    } else                                                                   {
+      $this -> HostUuid = $this -> AppendHost ( $DB )                        ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( gmp_cmp ( $this -> HostUuid , 0 ) > 0      ) {
+    //////////////////////////////////////////////////////////////////////////
+    $U            = $this -> LookForURL ( $DB )                              ;
+    if                        ( gmp_cmp ( $U , 0 ) > 0                     ) {
+      $this -> UrlUuid = $U                                                  ;
+    } else                                                                   {
+      $this -> UrlUuid = $this -> AppendURL ( $DB )                          ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                          ( gmp_cmp ( $this -> UrlUuid , 0 ) > 0       ) {
+    //////////////////////////////////////////////////////////////////////////
+    $this -> Uuid = $this -> AppendPage ( $DB )                              ;
+    $ANSWER = true                                                           ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  $DB -> UnlockTables         (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $ANSWER                                                             ;
+}
 //////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
