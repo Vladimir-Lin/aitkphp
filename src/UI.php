@@ -29,6 +29,77 @@ public static function GetPathInfos ( )                                      {
   return $LISTs                                                              ;
 }
 //////////////////////////////////////////////////////////////////////////////
+public static function SitePath (                                          ) {
+  $HTTPS     = "http"                                                        ;
+  if                            ( isset ( $_SERVER['HTTPS'] )              ) {
+    $H       = $_SERVER['HTTPS']                                             ;
+    if                          ( $H == "on"                               ) {
+      $HTTPS = "https"                                                       ;
+    }                                                                        ;
+  }                                                                          ;
+  $HOSX      = $_SERVER['HTTP_HOST']                                         ;
+  return "{$HTTPS}://{$HOSX}"                                                ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public static function PageInfo ( $MAPS                                    ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $QSVT            = ""                                                      ;
+  if                            ( isset ( $_SERVER['QUERY_STRING'] )       ) {
+    $QSVT          = $_SERVER['QUERY_STRING']                                ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PIFS            = ""                                                      ;
+  if                            ( isset ( $_SERVER['PATH_INFO'] )          ) {
+    $PIFS          = $_SERVER['PATH_INFO']                                   ;
+    $KKK           = "PathInfo = ''"                                         ;
+    $VVV           = "PathInfo = '{$PIFS}'"                                  ;
+    $MAPS [ $KKK ] = $VVV                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $RURL            = $GLOBALS [ "RootURL" ]                                  ;
+  $KJ              = "RequestURL = ''"                                       ;
+  $VJ              = "RequestURL = '{$RURL}'"                                ;
+  $MAPS [ $KJ ]    = $VJ                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $PURL            = $RURL                                                   ;
+  if ( strlen ( $QSVT ) > 0                                                ) {
+    $QXSTR         = "?{$QSVT}"                                              ;
+    $IDX           = strrpos     ( $PURL , $QXSTR                          ) ;
+    if                           ( $IDX >= 0                               ) {
+      $LENX        = strlen      ( $PURL                                   ) ;
+      $QLEN        = strlen      ( $QXSTR                                  ) ;
+      $PA          = substr      ( $PURL , 0 , $IDX                        ) ;
+      $PB          = substr      ( $PURL , $IDX + $QLEN , $LENX - $QLEN    ) ;
+      $PURL        = "{$PA}{$PB}"                                            ;
+    }                                                                        ;
+  }                                                                          ;
+  $IDX             = strrpos     ( $RURL , $PIFS                           ) ;
+  if                             ( $IDX >= 0                               ) {
+    $LENX          = strlen      ( $PURL                                   ) ;
+    $QLEN          = strlen      ( $PIFS                                   ) ;
+    $PA            = substr      ( $PURL , 0 , $IDX                        ) ;
+    $PB            = substr      ( $PURL , $IDX + $QLEN , $LENX - $QLEN    ) ;
+    $PURL          = "{$PA}{$PB}"                                            ;
+  }                                                                          ;
+  $KJ              = "PageURL = ''"                                          ;
+  $VJ              = "PageURL = '{$PURL}'"                                   ;
+  $MAPS [ $KJ ]    = $VJ                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SITE            = self::SitePath ( )                                   ;
+  $KJ              = "SitePath = ''"                                         ;
+  $VJ              = "SitePath = '{$SITE}'"                                  ;
+  $MAPS [ $KJ ]    = $VJ                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( isset ( $_SERVER['PHP_SELF'] )                                      ) {
+    $PHPSELF       = $_SERVER['PHP_SELF']                                    ;
+    $KKK           = "PageSelf = ''"                                         ;
+    $VVV           = "PageSelf = '{$PHPSELF}'"                               ;
+    $MAPS [ $KKK ] = $VVV                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $MAPS                                                               ;
+}
+//////////////////////////////////////////////////////////////////////////////
 public static function CallAnyFunction ( $DB , $HH , $AA                   ) {
   ////////////////////////////////////////////////////////////////////////////
   $AA [ "Answer" ] = "No"                                                    ;
@@ -116,6 +187,80 @@ public static function SendHostRPC      ( $CONF , $CMD , $POSTING          ) {
   )                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   return self::RequestHostRPC           ( $URL , $HEADERS , $POSTING       ) ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public static function ParseRelation ( $PIFs , $AMOUNT = 60                ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $START    = 1                                                              ;
+  ////////////////////////////////////////////////////////////////////////////
+  $RELATE   = $PIFs [ 1 ]                                                    ;
+  $TYPE     = $PIFs [ 2 ]                                                    ;
+  $UUID     = $PIFs [ 3 ]                                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( count ( $PIFs ) > 4                 ) {
+    $START  = $PIFs [ 4 ]                                                    ;
+    $START  = intval                 ( $START            , 10              ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                                 ( count ( $PIFs ) > 5                 ) {
+    $END    = $PIFs [ 5 ]                                                    ;
+    $END    = intval                 ( $END              , 10              ) ;
+    $DIFF   = intval                 ( $END - $START + 1 , 10              ) ;
+    if                               ( $DIFF > 0                           ) {
+      $AMOUNT = $DIFF                                                        ;
+    }                                                                        ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $SEARCH   = ""                                                             ;
+  if                                 ( count ( $PIFs ) > 6                 ) {
+    $SEARCH = $PIFs [ 6 ]                                                    ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  $START    = intval                 ( $START - 1        , 10              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return array                                                               (
+    "Relation" => $RELATE                                                    ,
+    "Type"     => $TYPE                                                      ,
+    "Uuid"     => $UUID                                                      ,
+    "Start"    => $START                                                     ,
+    "Amount"   => $AMOUNT                                                    ,
+    "Search"   => $SEARCH                                                    ,
+  )                                                                          ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public static function ExportRelationInformation ( $MAPS                     ,
+                                                   $PIFs                     ,
+                                                   $AMOUNT = 60            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $PARAMS        = self::ParseRelation ( $PIFs , $AMOUNT                   ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $RELATE        = $PARAMS             [ "Relation"                        ] ;
+  $TYPE          = $PARAMS             [ "Type"                            ] ;
+  $UUID          = $PARAMS             [ "Uuid"                            ] ;
+  $START         = $PARAMS             [ "Start"                           ] ;
+  $AMOUNT        = $PARAMS             [ "Amount"                          ] ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KKK           = "groupRelation = 1"                                       ;
+  $VVV           = "groupRelation = {$RELATE}"                               ;
+  $MAPS [ $KKK ] = $VVV                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KKK           = "groupType = 158"                                         ;
+  $VVV           = "groupType = {$TYPE}"                                     ;
+  $MAPS [ $KKK ] = $VVV                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KKK           = "groupFirstUuid = ''"                                     ;
+  $VVV           = "groupFirstUuid = '{$UUID}'"                              ;
+  $MAPS [ $KKK ] = $VVV                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KKK           = "groupStart = 0"                                          ;
+  $VVV           = "groupStart = {$START}"                                   ;
+  $MAPS [ $KKK ] = $VVV                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $KKK           = "groupAmount = 60"                                        ;
+  $VVV           = "groupAmount = {$AMOUNT}"                                 ;
+  $MAPS [ $KKK ] = $VVV                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $MAPS                                                               ;
 }
 //////////////////////////////////////////////////////////////////////////////
 }
