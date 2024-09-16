@@ -88,9 +88,9 @@ public static function ReplaceTemplateByMaps ( $TEMPLATE , $MAPS , $REPLACES )
 //////////////////////////////////////////////////////////////////////////////
 public static function ReplaceFileByKeys ( $FILENAME , $REPLACES           ) {
   ////////////////////////////////////////////////////////////////////////////
-  $CMHR = file_get_contents  ( $FILENAME         )                           ;
+  $CMHR = file_get_contents              ( $FILENAME                       ) ;
   ////////////////////////////////////////////////////////////////////////////
-  return self::ReplaceByKeys ( $CMHR , $REPLACES )                           ;
+  return self::ReplaceByKeys             ( $CMHR , $REPLACES               ) ;
 }
 //////////////////////////////////////////////////////////////////////////////
 public static function ReplaceFileByMaps ( $FILENAME , $MAPS , $REPLACES )   {
