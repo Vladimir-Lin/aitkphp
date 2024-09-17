@@ -4,387 +4,281 @@ namespace AITK                                                               ;
 //////////////////////////////////////////////////////////////////////////////
 class Variables extends Columns                                              {
 //////////////////////////////////////////////////////////////////////////////
-public $Id      ;
-public $Uuid    ;
-public $Name    ;
-public $Prefer  ;
-public $Note    ;
-public $Title   ;
-public $Comment ;
-public $Extra   ;
-public $Update  ;
+public $Id                                                                   ;
+public $Uuid                                                                 ;
+public $VType                                                                ;
+public $Name                                                                 ;
+public $Value                                                                ;
+public $Update                                                               ;
+public $Found                                                                ;
 //////////////////////////////////////////////////////////////////////////////
-function __construct()
-{
-  $this -> clear ( )  ;
-}
-
-function __destruct()
-{
-  unset ( $this -> Columns ) ;
-}
-
-public function clear()
-{
-  $this -> Id      = 0  ;
-  $this -> Uuid    = 0  ;
-  $this -> Name    = "" ;
-  $this -> Prefer  = 0  ;
-  $this -> Note    = "" ;
-  $this -> Title   = "" ;
-  $this -> Comment = "" ;
-  $this -> Extra   = "" ;
-  $this -> Update  = 0  ;
-}
-
-public function assign($Item)
-{
-  $this -> Id      = $Item -> Id      ;
-  $this -> Uuid    = $Item -> Uuid    ;
-  $this -> Name    = $Item -> Name    ;
-  $this -> Prefer  = $Item -> Prefer  ;
-  $this -> Note    = $Item -> Note    ;
-  $this -> Title   = $Item -> Title   ;
-  $this -> Comment = $Item -> Comment ;
-  $this -> Extra   = $Item -> Extra   ;
-  $this -> Update  = $Item -> Update  ;
-}
-
-public function tableItems()
-{
-  $S = array (                ) ;
-  array_push ( $S , "id"      ) ;
-  array_push ( $S , "uuid"    ) ;
-  array_push ( $S , "name"    ) ;
-  array_push ( $S , "prefer"  ) ;
-  array_push ( $S , "note"    ) ;
-  array_push ( $S , "title"   ) ;
-  array_push ( $S , "comment" ) ;
-  array_push ( $S , "extra"   ) ;
-  array_push ( $S , "ltime"   ) ;
-  return $S                     ;
-}
-
-public function Items( $S = "," )
-{
-  $X = $this -> tableItems (         ) ;
-  $L = $this -> JoinItems  ( $X , $S ) ;
-  unset                    ( $X      ) ;
-  return $L                            ;
-}
-
-public function set($item,$V)
-{
-  $a = strtolower ( $item )                    ;
-  if ( "id"      == $a ) $this -> Id      = $V ;
-  if ( "uuid"    == $a ) $this -> Uuid    = $V ;
-  if ( "name"    == $a ) $this -> Name    = $V ;
-  if ( "prefer"  == $a ) $this -> Prefer  = $V ;
-  if ( "note"    == $a ) $this -> Note    = $V ;
-  if ( "title"   == $a ) $this -> Title   = $V ;
-  if ( "comment" == $a ) $this -> Comment = $V ;
-  if ( "extra"   == $a ) $this -> Extra   = $V ;
-  if ( "ltime"   == $a ) $this -> Update  = $V ;
-}
-
-public function get($item)
-{
-  $a = strtolower ( $item )                      ;
-  if ( "id"      == $a ) return $this -> Id      ;
-  if ( "uuid"    == $a ) return $this -> Uuid    ;
-  if ( "name"    == $a ) return $this -> Name    ;
-  if ( "prefer"  == $a ) return $this -> Prefer  ;
-  if ( "note"    == $a ) return $this -> Note    ;
-  if ( "title"   == $a ) return $this -> Title   ;
-  if ( "comment" == $a ) return $this -> Comment ;
-  if ( "extra"   == $a ) return $this -> Extra   ;
-  if ( "ltime"   == $a ) return $this -> Update  ;
-  return ""                                      ;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-public function ItemPair($item)
-{
-  $a = strtolower ( $item )                               ;
-  if ( "id"        == $a )                                {
-    return "`{$a}` = " . (string) $this -> Id             ;
-  }                                                       ;
-  if ( "uuid"      == $a )                                {
-    return "`{$a}` = " . (string) $this -> Uuid           ;
-  }                                                       ;
-  if ( "name"      == $a )                                {
-    return "`{$a}` = '" . (string) $this -> Name . "'"    ;
-  }                                                       ;
-  if ( "prefer"  == $a )                                  {
-    return "`{$a}` = " . (string) $this -> prefer         ;
-  }                                                       ;
-  if ( "note" == $a )                                     {
-    return "`{$a}` = '" . (string) $this -> Note . "'"    ;
-  }                                                       ;
-  if ( "title" == $a )                                    {
-    return "`{$a}` = '" . (string) $this -> Title . "'"   ;
-  }                                                       ;
-  if ( "comment" == $a )                                  {
-    return "`{$a}` = '" . (string) $this -> Comment . "'" ;
-  }                                                       ;
-  if ( "extra" == $a )                                    {
-    return "`{$a}` = '" . (string) $this -> Extra . "'"   ;
-  }                                                       ;
-  if ( "ltime"     == $a )                                {
-    return "`{$a}` = " . (string) $this -> Update         ;
-  }                                                       ;
-  return ""                                               ;
-}
-
-public function Pair($item)
-{
-  return "`" . $item . "` = " . $this -> get ( $item ) ;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-public function Pairs($Items)
-{
-  $P = array ( )                                ;
-  foreach ( $Items as $item )                   {
-    array_push ( $P , $this -> Pair ( $item ) ) ;
-  }                                             ;
-  $Q = implode ( " , " , $P )                   ;
-  unset        ( $P         )                   ;
-  return $Q                                     ;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-public function setOwner($UUID,$NAME)
-{
-  $this -> Uuid = $UUID ;
-  $this -> Name = $NAME ;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-public function WhereClause($PREFER="")
-{
-  $W = ""                                            ;
-  if ( strlen ( $PREFER ) >= 0 )                     {
-    $W =  " where `uuid` = "  . $this -> Uuid        .
-            " and `name` = '" . $this -> Name . "'"  .
-          " and `prefer` = "  . $PREFER       . " ;" ;
-  } else                                             {
-    $W =  " where `uuid` = "  . $this -> Uuid        .
-            " and `name` = '" . $this -> Name . "'"  .
-           " order by `prefer` desc limit 0,1 ;"     ;
-  }                                                  ;
-  return $W                                          ;
-}
-
-public function Select($TABLE,$PREFER="")
-{
-  return "select `note` from " . $TABLE   .
-         $this -> WhereClause ( $PREFER ) ;
-}
-
-public function Delete($TABLE)
-{
-  return "delete from {$TABLE}"                   .
-         $this -> WhereClause ( $this -> Prefer ) ;
-}
-
-public function Insert($DB,$TABLE)
-{
-  $CUID   = $this -> Uuid                               ;
-  $NAME   = $this -> Name                               ;
-  $PREFER = $this -> Prefer                             ;
-  $NOTE   = $this -> Note                               ;
-  $QQ     = "insert into {$TABLE} "                     .
-            "(`uuid`,`name`,`prefer`,`note` ) values "  .
-            "( {$CUID} , '{$NAME}' , {$PREFER} , ? ) ;" ;
-  $qq     = $DB -> Prepare ( $QQ         )              ;
-  $qq    -> bind_param     ( 's' , $NOTE )              ;
-  $rt     = $qq -> execute (             )              ;
-  $qq    -> close          (             )              ;
-  return $rt                                            ;
-}
-
-public function UpdateNote($DB,$TABLE)
-{
-  $CUID   = $this -> Uuid                     ;
-  $NAME   = $this -> Name                     ;
-  $PREFER = $this -> Prefer                   ;
-  $NOTE   = $this -> Note                     ;
-  $QQ     = "update {$TABLE} set `note` = ? " .
-             "where `uuid` = {$CUID}"         .
-              " and `name` = '{$NAME}'"       .
-            " and `prefer` = {$PREFER} ;"     ;
-  $qq     = $DB -> Prepare ( $QQ         )    ;
-  $qq    -> bind_param     ( 's' , $NOTE )    ;
-  $rt     = $qq -> execute (             )    ;
-  $qq    -> close          (             )    ;
-  return $rt                                  ;
-}
-
-public function UpdateColumn($DB,$TABLE,$COLUMN,$VALUE)
-{
-  $CUID   = $this -> Uuid                          ;
-  $NAME   = $this -> Name                          ;
-  $PREFER = $this -> Prefer                        ;
-  $QQ     = "update {$TABLE} set `{$COLUMN}` = ? " .
-             "where `uuid` = {$CUID}"              .
-              " and `name` = '{$NAME}'"            .
-            " and `prefer` = {$PREFER} ;"          ;
-  $qq     = $DB -> Prepare ( $QQ          )        ;
-  $qq    -> bind_param     ( 's' , $VALUE )        ;
-  $rt     = $qq -> execute (              )        ;
-  $qq    -> close          (              )        ;
-  return $rt                                       ;
-}
-
-public function Obtains($DB,$TABLE,$PREFER="")
-{
-  $this -> Note = ""                                   ;
-  $QQ           = $this -> Select ( $TABLE , $PREFER ) ;
-  $qq           = $DB   -> Query  ( $QQ              ) ;
-  if ( $DB -> hasResult ( $qq ) )                      {
-    $rr           = $qq -> fetch_array ( MYSQLI_BOTH ) ;
-    $this -> Note = $rr [ 0 ]                          ;
-  }                                                    ;
-  return $this -> Note                                 ;
-}
-
-public function ObtainsAll($DB,$TABLE,$PREFER="")
-{
-  $this -> Note      = ""                                                ;
-  $this -> Title     = ""                                                ;
-  $this -> Comment   = ""                                                ;
-  $this -> Extra     = ""                                                ;
-  $WH    = $this -> WhereClause ( $PREFER )                              ;
-  $QQ    = "select `note`,`title`,`comment`,`extra` from {$TABLE} {$WH}" ;
-  $qq    = $DB   -> Query  ( $QQ )                                       ;
-  if ( $DB -> hasResult ( $qq ) )                                        {
-    $rr              = $qq -> fetch_array ( MYSQLI_BOTH )                ;
-    $this -> Note    = $rr [ 0 ]                                         ;
-    $this -> Title   = $rr [ 1 ]                                         ;
-    $this -> Comment = $rr [ 2 ]                                         ;
-    $this -> Extra   = $rr [ 3 ]                                         ;
-  }                                                                      ;
-  return $this -> Note                                                   ;
-}
-
-public function ObtainByOwner($DB,$TABLE,$UUID,$NAME,$PREFER="")
-{
-  $this -> setOwner       ( $UUID , $NAME          ) ;
-  return $this -> Obtains ( $DB , $TABLE , $PREFER ) ;
-}
-
-public function ObtainIDs($DB,$TABLE,$ITEM="id",$ORDER="asc")
-{
-  $IDs = array ( )                                     ;
-  $QQ  = "select `{$ITEM}` from {$TABLE}"              .
-         " where `uuid` = {$this->Uuid}"               .
-         " and `name` = '{$this->Name}'"               .
-         " order by `prefer` {$ORDER} ;"               ;
-  $qq  = $DB -> Query ( $QQ )                          ;
-  if ( $DB -> hasResult ( $qq ) )                      {
-    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH ) ) {
-      array_push ( $IDs , $rr [ 0 ] )                  ;
-    }                                                  ;
-  }                                                    ;
-  return $IDs                                          ;
-}
-
-public function ObtainStrings($DB,$TABLE,$ORDER="asc")
-{
-  $IDs = array ( )                                     ;
-  $QQ  = "select `note` from {$TABLE}"                 .
-         " where `uuid` = {$this->Uuid}"               .
-          " and `name` = '{$this->Name}'"              .
-         " order by `prefer` {$ORDER} ;"               ;
-  $qq  = $DB -> Query ( $QQ )                          ;
-  if ( $DB -> hasResult ( $qq ) )                      {
-    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH ) ) {
-      array_push ( $IDs , $rr [ 0 ] )                  ;
-    }                                                  ;
-  }                                                    ;
-  return $IDs                                          ;
-}
-
-public function ObtainMaps($DB,$TABLE,$ORDER="asc")
-{
-  $IDs = array ( )                                     ;
-  $QQ  = "select `note`,`prefer` from {$TABLE}"        .
-         " where `uuid` = {$this->Uuid}"               .
-           " and `name` = '{$this->Name}'"             .
-         " order by `prefer` {$ORDER} ;"               ;
-  $qq  = $DB -> Query ( $QQ )                          ;
-  if ( $DB -> hasResult ( $qq ) )                      {
-    while ( $rr = $qq -> fetch_array ( MYSQLI_BOTH ) ) {
-      $NOTE        = $rr [ 0 ]                         ;
-      $ID          = $rr [ 1 ]                         ;
-      $IDs [ $ID ] = $NOTE                             ;
-    }                                                  ;
-  }                                                    ;
-  return $IDs                                          ;
-}
-
-public function assureNote ( $DB , $TABLE )
-{
-  $this -> Prefer = 0                       ;
-  $DS    = $this -> Delete ( $TABLE       ) ;
-  $DB   -> Query           ( $DS          ) ;
-  $this -> Insert          ( $DB , $TABLE ) ;
+function __construct  (                                                    ) {
+  ////////////////////////////////////////////////////////////////////////////
+  parent::__construct (                                                    ) ;
+  $this -> clear      (                                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
-public function appendNote($DB,$TABLE)
-{
-  $this -> Prefer = -1                                   ;
-  $QQ  = "select `prefer` from " . $TABLE                .
-         " where `uuid` = " . (string) $this -> Uuid     .
-          " and `name` = '" . $this -> Name . "'"        .
-         " order by `prefer` desc limit 0,1 ;"           ;
-  $qq  = $DB -> Query ( $QQ )                            ;
-  if ( $DB -> hasResult ( $qq ) )                        {
-    $rr             = $qq -> fetch_array ( MYSQLI_BOTH ) ;
-    $this -> Prefer = $rr [ 0 ]                          ;
-  }                                                      ;
-  $this -> Prefer = $this -> Prefer + 1                  ;
-  $this -> Insert ( $DB , $TABLE )                       ;
+function __destruct  (                                                     ) {
+  ////////////////////////////////////////////////////////////////////////////
+  unset              ( $this -> Columns                                    ) ;
+  parent::__destruct (                                                     ) ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
-public function Editing($DB,$TABLE)
-{
-  if ( $this -> Prefer < 0 )                      {
-    if ( strlen ( $this -> Note ) > 0 )           {
-      $this -> appendNote ( $DB , $TABLE )        ;
-    }                                             ;
-  } else                                          {
-    if ( strlen ( $this -> Note ) > 0 )           {
-      $this -> UpdateNote ( $DB , $TABLE )        ;
-    } else                                        {
-      $DB -> Query ( $this -> Delete ( $TABLE ) ) ;
-    }                                             ;
-  }                                               ;
+public function clear (                                                    ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Id      = 0                                                       ;
+  $this -> Uuid    = 0                                                       ;
+  $this -> VType   = 0                                                       ;
+  $this -> Name    = ""                                                      ;
+  $this -> Value   = ""                                                      ;
+  $this -> Update  = 0                                                       ;
+  $this -> Found   = false                                                   ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
-public function Ordering($DB,$TABLE,$IDs)
-{
-  if ( count ( $IDs ) <= 0 ) return false           ;
-  $CC  = 0                                          ;
-  foreach ( $IDs as $id )                           {
-    $QQ  = "update " . $TABLE                       .
-           " set `prefer` = " . (string) $CC        .
-             " where `id` = " . (string) $id . " ;" ;
-    $DB -> Query ( $QQ )                            ;
-    $CC  = $CC + 1                                  ;
-  }                                                 ;
+public function assign ( $Item                                             ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Id     = $Item -> Id                                              ;
+  $this -> Uuid   = $Item -> Uuid                                            ;
+  $this -> VType  = $Item -> VType                                           ;
+  $this -> Name   = $Item -> Name                                            ;
+  $this -> Value  = $Item -> Value                                           ;
+  $this -> Update = $Item -> Update                                          ;
+  $this -> Found  = $Item -> Found                                           ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
-public function Organize($DB,$TABLE)
-{
-  $IDs = $this -> ObtainIDs ( $DB , $TABLE        ) ;
-  $this        -> Ordering  ( $DB , $TABLE , $IDs ) ;
-  unset                     (                $IDs ) ;
+public function tableItems (                                               ) {
+  return                   [ "id"                                            ,
+                             "uuid"                                          ,
+                             "type"                                          ,
+                             "name"                                          ,
+                             "value"                                         ,
+                             "ltime"                                       ] ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Items      ( $S = ","                                      ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $X = $this -> tableItems (                                               ) ;
+  $L = $this -> JoinItems  ( $X , $S                                       ) ;
+  unset                    ( $X                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $L                                                                  ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function ItemPair        ( $item                                    ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $a               = strtolower ( $item                                    ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                            ( "id"    == $a                            ) {
+    return "`{$a}` = " . (string) $this -> Id                                ;
+  }                                                                          ;
+  if                            ( "uuid"  == $a                            ) {
+    return "`{$a}` = " . (string) $this -> Uuid                              ;
+  }                                                                          ;
+  if                            ( "type"  == $a                            ) {
+    return "`{$a}` = " . (string) $this -> VType                             ;
+  }                                                                          ;
+  if                            ( "name"  == $a                            ) {
+    return "`{$a}` = '" . (string) $this -> Name . "'"                       ;
+  }                                                                          ;
+  if                            ( "value" == $a                            ) {
+    return "`{$a}` = '" . (string) $this -> Value . "'"                      ;
+  }                                                                          ;
+  if                            ( "ltime" == $a                            ) {
+    return "`{$a}` = " . (string) $this -> Update                            ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  return ""                                                                  ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function set ( $item , $V                                           ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $a = strtolower   ( $item                                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( "id"    == $a ) $this -> Id      = $V                                 ;
+  if ( "uuid"  == $a ) $this -> Uuid    = $V                                 ;
+  if ( "type"  == $a ) $this -> VType   = $V                                 ;
+  if ( "name"  == $a ) $this -> Name    = $V                                 ;
+  if ( "value" == $a ) $this -> Value   = $V                                 ;
+  if ( "ltime" == $a ) $this -> Update  = $V                                 ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+public function get ( $item                                                ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $a = strtolower   ( $item                                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( "id"    == $a ) return $this -> Id                                    ;
+  if ( "uuid"  == $a ) return $this -> Uuid                                  ;
+  if ( "type"  == $a ) return $this -> VType                                 ;
+  if ( "name"  == $a ) return $this -> Name                                  ;
+  if ( "value" == $a ) return $this -> Value                                 ;
+  if ( "ltime" == $a ) return $this -> Update                                ;
+  ////////////////////////////////////////////////////////////////////////////
+  return ""                                                                  ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function setIndex ( $UUID , $VTYPE , $NAME                          ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Uuid  = $UUID                                                     ;
+  $this -> VType = $VTYPE                                                    ;
+  $this -> Name  = $NAME                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Select      ( $Table                                         ,
+                              $Options = "order by `id` asc"                 ,
+                              $Limits  = ""                                ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $L = $this -> tableItems  (                                              ) ;
+  $Q = $this -> SelectItems ( $Table , $L , $Options , $Limits             ) ;
+  unset                     ( $L                                           ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $Q                                                                  ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Obtain     ( $R                                            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Id     = intval ( $R [ "id"                              ] , 10 ) ;
+  $this -> Uuid   = intval ( $R [ "uuid"                            ] , 10 ) ;
+  $this -> VType  = intval ( $R [ "type"                            ] , 10 ) ;
+  $this -> Name   = (string) $R [ "name"                                   ] ;
+  $this -> Value  = (string) $R [ "value"                                  ] ;
+  $this -> Update =          $R [ "ltime"                                  ] ;
+  ////////////////////////////////////////////////////////////////////////////
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Delete ( $TABLE                                            ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $U = $this -> Uuid                                                         ;
+  $T = $this -> VType                                                        ;
+  $N = $this -> VType                                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  return "delete from {$TABLE}"                                              .
+         " where ( `uuid` = {$U} )"                                          .
+           " and ( `type` = {$T} )"                                          .
+           " and ( `name` = '{$N}' ) ;"                                      ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Insert  ( $DB , $TABLE                                     ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $U   = $this -> Uuid                                                       ;
+  $T   = $this -> VType                                                      ;
+  $N   = $this -> Name                                                       ;
+  $V   = $this -> Value                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ  = "insert into {$TABLE} "                                             .
+         "(`uuid`,`type`,`name`,`value`) values "                            .
+         "( {$U} , {$T} , ? , ? ) ;"                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $qq  = $DB -> Prepare ( $QQ                                              ) ;
+  $qq -> bind_param     ( 'ss' , $N , $V                                   ) ;
+  $rt  = $qq -> execute (                                                  ) ;
+  $qq -> close          (                                                  ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $rt                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function obtainValue   ( $DB , $TABLE                               ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $U     = $this -> Uuid                                                     ;
+  $T     = $this -> VType                                                    ;
+  $N     = $this -> Name                                                     ;
+  $this -> Found = false                                                     ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ    = "select `value` from {$TABLE}"                                    .
+           " where ( `uuid` = {$U} )"                                        .
+             " and ( `type` = {$T} )"                                        .
+             " and ( `name` = ? ) ;"                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $qq    = $DB -> Prepare     ( $QQ                                        ) ;
+  $qq   -> bind_param         ( 's' , $N                                   ) ;
+  $qq   -> execute            (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $kk    = $qq -> get_result  (                                            ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ! $DB -> hasResult ( $kk ) ) return ""                                ;
+  $rr    = $kk -> fetch_array ( MYSQLI_BOTH                                ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  $this -> Found = true                                                      ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $rr                  [ 0                                          ] ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function UpdateValue ( $DB , $TABLE , $VALUE                        ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $U     = $this -> Uuid                                                     ;
+  $T     = $this -> VType                                                    ;
+  $N     = $this -> Name                                                     ;
+  $this -> Value = $VALUE                                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ    = "update {$TABLE} "                                                .
+           " set `value` = ?"                                                .
+           " where ( `uuid` = {$U} )"                                        .
+             " and ( `type` = {$T} )"                                        .
+             " and ( `name` = ? ) ;"                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $qq    = $DB -> Prepare   ( $QQ                                          ) ;
+  $qq   -> bind_param       ( 'ss' , $VALUE , $N                           ) ;
+  $rt    = $qq -> execute   (                                              ) ;
+  $qq   -> close            (                                              ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  return $rt                                                                 ;
+}
+//////////////////////////////////////////////////////////////////////////////
+public function Assure       ( $DB , $TABLE , $VALUE                       ) {
+  ////////////////////////////////////////////////////////////////////////////
+  $U     = $this -> Uuid                                                     ;
+  $T     = $this -> VType                                                    ;
+  $N     = $this -> Name                                                     ;
+  $this -> Value = $VALUE                                                    ;
+  ////////////////////////////////////////////////////////////////////////////
+  $QQ    = "select `id` from {$TABLE}"                                       .
+           " where ( `uuid` = {$U} )"                                        .
+             " and ( `type` = {$T} )"                                        .
+             " and ( `name` = ? ) ;"                                         ;
+  ////////////////////////////////////////////////////////////////////////////
+  $qq    = $DB -> Prepare    ( $QQ                                         ) ;
+  $qq   -> bind_param        ( 's' , $N                                    ) ;
+  $qq   -> execute           (                                             ) ;
+  $kk    = $qq -> get_result (                                             ) ;
+  ////////////////////////////////////////////////////////////////////////////
+  if                         ( $DB -> hasResult ( $kk )                    ) {
+    //////////////////////////////////////////////////////////////////////////
+    $rr = $kk -> fetch_array ( MYSQLI_BOTH                                 ) ;
+    $ID = $rr                [ 0                                           ] ;
+    //////////////////////////////////////////////////////////////////////////
+    $QQ = "update {$TABLE}"                                                  .
+          " set `value` = ?"                                                 .
+           " where ( `id` = {$ID} ) ;"                                       ;
+    //////////////////////////////////////////////////////////////////////////
+    $qq  = $DB -> Prepare    ( $QQ                                         ) ;
+    $qq -> bind_param        ( 's' , $VALUE                                ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $rt  = $qq -> execute    (                                             ) ;
+    $qq -> close             (                                             ) ;
+    //////////////////////////////////////////////////////////////////////////
+    return $rt                                                               ;
+    //////////////////////////////////////////////////////////////////////////
+  } else                                                                     {
+    //////////////////////////////////////////////////////////////////////////
+    $QQ = "insert into {$TABLE}"                                             .
+          " (`uuid`,`type`,`name`,`value`)"                                  .
+          " values ({$U},{$T},?,?) ;"                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    $qq   = $DB -> Prepare   ( $QQ                                         ) ;
+    $qq  -> bind_param       ( 'ss' , $N , $VALUE                          ) ;
+    //////////////////////////////////////////////////////////////////////////
+    $rt  = $qq -> execute    (                                             ) ;
+    $qq -> close             (                                             ) ;
+    //////////////////////////////////////////////////////////////////////////
+    return $rt                                                               ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 }
