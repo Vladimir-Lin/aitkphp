@@ -1,6 +1,6 @@
 <?php
 //////////////////////////////////////////////////////////////////////////////
-// AITK圖片元件
+// 圖片處理元件
 //////////////////////////////////////////////////////////////////////////////
 namespace AITK                                                               ;
 use Intervention\Image\ImageManagerStatic as Image                           ;
@@ -54,18 +54,18 @@ public function Clear ( )                                                    {
   $this -> Removal       = true                                              ;
   $this -> CheckSize     = true                                              ;
   $this -> MaxLimit      = 32 * 1024 * 1024                                  ;
-  $this -> PictureOrders = "`pictureorders`"                                 ;
-  $this -> PictureTable  = "`pictures`"                                      ;
-  $this -> PictureDepot  = "`picturedepot`"                                  ;
-  $this -> ThumbTable    = "`thumbs`"                                        ;
-  $this -> ThumbDepot    = "`thumbdepot`"                                    ;
-  $this -> MainTable     = "`uuids`"                                         ;
+  $this -> PictureOrders = "`erp`.`pictureorders`"                           ;
+  $this -> PictureTable  = "`erp`.`pictures`"                                ;
+  $this -> PictureDepot  = "`erp`.`picturedepot`"                            ;
+  $this -> ThumbTable    = "`erp`.`thumbs`"                                  ;
+  $this -> ThumbDepot    = "`erp`.`thumbdepot`"                              ;
+  $this -> MainTable     = "`erp`.`uuids`"                                   ;
 }
 //////////////////////////////////////////////////////////////////////////////
 public function GetUuid ( $DB )                                              {
-  global $DataTypes                                                          ;
   $BASE         = "3800000000000000000"                                      ;
-  $TYPE         = $DataTypes [ "Picture" ]                                   ;
+  $RI           = new Relation   (                                         ) ;
+  $TYPE         = $RI -> Types [ "Picture" ]                                   ;
   $this -> Uuid = $DB -> GetLast ( $this -> PictureTable , "uuid" , $BASE  ) ;
   if ( gmp_cmp ( $this -> Uuid , "0" ) == 0 ) return false                   ;
   $DB -> AddUuid    ( $this -> MainTable , $this -> Uuid , $TYPE )           ;
@@ -75,6 +75,7 @@ public function GetUuid ( $DB )                                              {
 }
 //////////////////////////////////////////////////////////////////////////////
 public function ObtainsUuid ( $DB )                                          {
+  ////////////////////////////////////////////////////////////////////////////
   $QQ = "select `uuid` from {$this->PictureTable}"                           .
         " where `filesize` = {$this->FileSize}"                              .
           " and `checksum` = {$this->Checksum} ;"                            .
@@ -102,6 +103,7 @@ public function ObtainsUuid ( $DB )                                          {
 }
 //////////////////////////////////////////////////////////////////////////////
 public function UpdateImage ( $DB )                                          {
+  ////////////////////////////////////////////////////////////////////////////
   $QQ = "update {$this->PictureTable} set"                                   .
             " `suffix` = '{$this->Suffix}' ,"                                .
           " `filesize` = {$this->FileSize} ,"                                .
@@ -117,9 +119,11 @@ public function UpdateImage ( $DB )                                          {
   $qq   = $DB -> Prepare ( $QQ                    )                          ;
   $qq  -> bind_param     ( 's' , $this -> Raw     )                          ;
   $qq  -> execute        (                        )                          ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 public function UpdateThumb ( $DB )                                          {
+  ////////////////////////////////////////////////////////////////////////////
   $ICONSIZE = strlen ( $this -> IconRaw )                                    ;
   $IWIDTH   = $this -> Icon -> width  ( )                                    ;
   $IHEIGHT  = $this -> Icon -> height ( )                                    ;
@@ -140,6 +144,7 @@ public function UpdateThumb ( $DB )                                          {
   $qq   = $DB -> Prepare ( $QQ                    )                          ;
   $qq  -> bind_param     ( 's' , $this -> IconRaw )                          ;
   $qq  -> execute        (                        )                          ;
+  ////////////////////////////////////////////////////////////////////////////
 }
 //////////////////////////////////////////////////////////////////////////////
 public function Import ( $DB )                                               {
@@ -150,10 +155,12 @@ public function Import ( $DB )                                               {
 }
 //////////////////////////////////////////////////////////////////////////////
 public function ObtainsDetails ( $DB )                                       {
+  ////////////////////////////////////////////////////////////////////////////
   $QQ = "select `suffix`,`filesize`,`checksum`,`width`,`height`"             .
         " from {$this->PictureTable}"                                        .
         " where `uuid` = {$this->Uuid} ;"                                    ;
   $qq = $DB -> Query ( $QQ )                                                 ;
+  ////////////////////////////////////////////////////////////////////////////
   if ( $DB -> hasResult ( $qq ) )                                            {
     $rr               = $qq -> fetch_array ( MYSQLI_BOTH )                   ;
     $this -> Suffix   = $rr [ "suffix"   ]                                   ;
@@ -164,6 +171,7 @@ public function ObtainsDetails ( $DB )                                       {
     $this -> FileSize = $rr [ "filesize" ]                                   ;
     return true                                                              ;
   }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
   return false                                                               ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -205,11 +213,11 @@ public function FixIcon (                          )                         {
   return $img -> encode ( "png"                    )                         ;
 }
 //////////////////////////////////////////////////////////////////////////////
-public function ResizeIcon ( $WIDTH        , $HEIGHT                       ) {
-  $img  = Image::canvas    ( 128           , 128                           ) ;
-  $img -> insert           ( $this -> Icon , "center"                      ) ;
-  $img  = $img -> resize   ( $WIDTH        , $HEIGHT                       ) ;
-  return $img  -> encode   ( "png"                                         ) ;
+public function ResizeIcon ( $WIDTH        , $HEIGHT  )                      {
+  $img  = Image::canvas    ( 128           , 128      )                      ;
+  $img -> insert           ( $this -> Icon , "center" )                      ;
+  $img  = $img -> resize   ( $WIDTH        , $HEIGHT  )                      ;
+  return $img  -> encode   ( "png"                    )                      ;
 }
 //////////////////////////////////////////////////////////////////////////////
 public function ResizeImage ( $WIDTH , $HEIGHT )                             {
@@ -218,7 +226,7 @@ public function ResizeImage ( $WIDTH , $HEIGHT )                             {
              $HEIGHT                                                         ,
              function ( $constraint )                                        {
                $constraint -> aspectRatio ( )                                ;
-             }                                                             ) ;
+             }                              )                                ;
   return $img -> encode ( "png" )                                            ;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -237,7 +245,7 @@ public function EchoIcon ( )                                                 {
 public function EchoFixIcon ( )                                              {
 }
 //////////////////////////////////////////////////////////////////////////////
-public function fromUpload          ( $KEY , $UploadPath                   ) {
+public function fromUpload ( $KEY , $UploadPath )                            {
   ////////////////////////////////////////////////////////////////////////////
   global $Translations                                                       ;
   ////////////////////////////////////////////////////////////////////////////
