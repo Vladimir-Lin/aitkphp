@@ -61,9 +61,11 @@ public $Relations = array                                                    (
   "Tit"           => 39                                                      ,
   "Umbilicus"     => 40                                                      ,
   "Pussy"         => 41                                                      ,
-  "Tatto"         => 42                                                      ,
+  "Asshole"       => 42                                                      ,
   "Texture"       => 43                                                      ,
-  "End"           => 44                                                      ,
+  "Tatto"         => 44                                                      ,
+  "Exclude"       => 45                                                      ,
+  "End"           => 46                                                      ,
 )                                                                            ;
 //////////////////////////////////////////////////////////////////////////////
 public $Types         = array                                                (
